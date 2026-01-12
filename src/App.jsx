@@ -2,11 +2,18 @@ import React, { useState } from 'react'
 import './App.css'
 import OpenWB from './OpenWb';
 import SaveWB from './SaveWB';
+import Dashboard from './Dashboard';
+import UpdatePortfolio from './UpdatePortfolio';
+import Transactions from './Transactions';
+import UpdateLog from './UpdateLog';
+import UpdateBetaSheet from './UpdateBetaSheet';
+import UpdateSheets from './UpdateSheets';
+import UpdateLedger from './UpdateLedger';
 
 
 function App(){
 
-  
+
   return (
     <>
     <div>
@@ -16,37 +23,30 @@ function App(){
     </div>
     <div>
       <>
-      <OpenWB/>
+        <OpenWB/>
       </>
-      <button>
-        <p>Dashboard</p>
-      </button>
       <>
-      <SaveWB/>
+        <Dashboard/>
+      </>
+      <>
+        <SaveWB/>
       </>
     </div>
-
     <div>
-      <button>
-        <p>Update Portfolio</p>
-      </button>
-      <button>
-        <p>Transaction</p>
-      </button>
-      <button>
-        <p>Update Log</p>
-      </button>
+      <>
+        <UpdatePortfolio/>
+      </>
+      <>
+        <Transactions/>
+      </>
+      <>
+        <UpdateLog/>
+      </>
     </div>
     <div>
-      <button>
-        <p>Update Beta Sheet</p>
-      </button>
-      <button>
-        <p>Update Sheet</p>
-      </button>
-      <button>
-        <p>Update Ledger</p>
-      </button>
+      <><UpdateBetaSheet/></>
+      <><UpdateSheets/></>
+      <><UpdateLedger/></>
     </div>
     </>
   )

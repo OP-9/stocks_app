@@ -20,7 +20,7 @@ export default function SaveWB() {
 
     return (
         <button onClick={handleClick} >
-            {loading?"Saving...":"Save Workbook"}
+            {loading?"Saving...":"Save & Close Workbook"}
         </button>
     );
 };
