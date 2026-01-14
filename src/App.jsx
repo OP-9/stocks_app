@@ -1,6 +1,5 @@
-import React, { useState } from 'react'
 import './App.css'
-import OpenWB from './OpenWb';
+import OpenWB from './OpenWB';
 import SaveWB from './SaveWB';
 import Dashboard from './Dashboard';
 import UpdatePortfolio from './UpdatePortfolio';
@@ -20,66 +19,31 @@ function App(){
 
   return (
     <>
-    <div>
-      <h1>Stocks Portfolio</h1>
-      <h3>Date: {formattedDate}</h3>
-      <h3><LastUpdate/></h3>
-    </div>
-    <div>
-        <OpenWB/>
-        <Dashboard/>
-        <SaveWB/>
-    </div>
-    <div>
-        <UpdatePortfolio/>
-        <Transactions/>
-        <UpdateLog/>
-    </div>
-    <div>
-      <UpdateBetaSheet/>
-      <UpdateSheets/>
-      <UpdateLedger/>
-    </div>
-    </>
-  )
-}
-
-
-/*
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <div style={{gridArea:'titles',}}>
+        <h1>Stocks Portfolio</h1>
+        <h3>Date: {formattedDate}</h3>
+        <><LastUpdate/></> 
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-      <div>
-        <button>
-        <h2>Just testing this</h2>
-        </button>
+      <div className='container'>
+        <div className='box' style={{display:'flex', flexDirection:'column'}}>
+            <OpenWB/>
+            <UpdatePortfolio/>
+            <UpdateSheets/>
+        </div>
+        <div className='box' style={{display:'flex', flexDirection:'column'}}>
+            <Dashboard/>
+            <UpdateLog/>
+            <Transactions/>
+        </div>
+        <div className='box' style={{display:'flex', flexDirection:'column'}}>
+          <SaveWB/>
+          <UpdateBetaSheet/>
+          <UpdateLedger/>
+        </div>
       </div>
     </>
   )
 }
-*/
 
 
 export default App

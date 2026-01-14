@@ -2,6 +2,7 @@ import { useState } from "react";
 
 export default function Transactions () {
     const [clicked, setClicked] = useState(false);
+    const [canceled, setCanceled] = useState(false)
     const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
     date: "",
@@ -17,6 +18,13 @@ export default function Transactions () {
       setClicked(false);
     } else{
       setClicked(true);
+    }
+  };
+
+  const handleCancel = () => {
+    if (canceled){
+      setCanceled(true)
+      setLoading(true);
     }
   };
 
@@ -45,6 +53,7 @@ export default function Transactions () {
       } finally {
         setClicked(false);
         setLoading(false);
+        /*setCanceled(false)*/
       }
       }
       };
@@ -53,13 +62,13 @@ export default function Transactions () {
     <>
     {clicked?(
       <form style={{display: "flex", flexDirection: "column"}}>
-      <input name="date" placeholder="Date: Enter date of purchase in dd/mm/yyyy format" onChange={handleChange}></input>
+      <input name="date" placeholder="Date: in dd/mm/yyyy format" onChange={handleChange}></input>
       <input name="symbol" placeholder="Symbol: Enter the stock symbol" onChange={handleChange}></input>
-      <input name="action" placeholder="Action: Enter the action, i.e., either a BUY or SELL:" onChange={handleChange}></input>
+      <input name="action" placeholder="Action: either a BUY or SELL" onChange={handleChange}></input>
       <input name="quantity" placeholder="Quantity: Enter the quantity" onChange={handleChange}></input>
       <input name="price" placeholder="Price: Enter the price of the stock" onChange={handleChange}></input>
-      <button onClick={handleSubmit}>{loading?"Submitting...":"Submit"}</button>
-      <button onClick={handleClick}>{loading?"Cancelling...":"Cancel"}</button>
+      <button id='submit_button' onClick={handleSubmit}>{loading && !canceled?"Submitting...":"Submit"}</button>
+      <button id='cancel_button' onClick={handleCancel}>{loading && canceled?"Cancelling...":"Cancel"}</button>
       </form>
       )
       :<button onClick={handleClick}>Transactions</button>}

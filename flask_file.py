@@ -1,33 +1,39 @@
-# app.py
-
-#CONSIDER USING OPENPYXL
+import xlwings as xw
+fullname = r'/Users/oneshpunchinilame/Desktop/Programming/stocks_react_app/Portfolio.xlsx'
+xw.Book(fullname) 
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-import xlwings as xw
+
 from excel_connector import (open_wb, save_workbook, update_portfolio, 
-update_transactions, update_log, update_beta_sheet, retrieve_last_update,stock_names, update_sheets, update_ledger)
+update_transactions, update_log, update_beta_sheet, retrieve_last_update,
+stock_names, update_sheets, update_ledger)
 from dash_file import create_dash_app
 
 
 
 app = Flask(__name__)
-CORS(app)  # This allows your React app to talk to this server
+CORS(app)  
 
 create_dash_app(app)
 
 @app.route('/last_update', methods=['GET'])
 def update_time():
     try:
-        date_and_time = retrieve_last_update()
-        return jsonify({"status": "success", "message": date_and_time}), 200
+        (date_and_time, portfolio_value, 
+        portfolio_return, portfolio_return_perc) = retrieve_last_update()
+
+        return jsonify({"status": "success", "date_and_time": date_and_time,
+        "portfolio_value":portfolio_value, "portfolio_return":portfolio_return,
+        "portfolio_return_perc":portfolio_return_perc}), 200
+
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/open_wb', methods=['POST'])
 def open_the_wb():
     try:
-        result = open_wb()
+        result = open_wb(fullname)
         if result:
             return jsonify({"status": "success", "message": f"{result} has been opened"}), 200
 
@@ -47,10 +53,10 @@ def save_wb():
 """@app.route('/dashboard', methods=['POST'])
 def dashboard():
     
-        return jsonify({"status": "success", "message": f"Dashboard has been opened"}), 200"""
+        return jsonify({"status": "success", "message": f"Dashboard has been opened"}), 200
 
-    #except Exception as e:
-    #    return jsonify({"status": "error", "message": str(e)}), 500
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500"""
 
 @app.route('/update_portfolio', methods=['POST'])
 def upd_portfolio():
@@ -106,6 +112,7 @@ def upd_ledger():
         data = request.get_json()
         investor_dict = {}
         time_period = data.get('timePeriod')
+
         investor_dict['Arun Bhatia'] = float(data.get('arunBhatia'))
         investor_dict['Babita Bhatia'] = float(data.get('babitaBhatia'))
         investor_dict['Aakash Bhatia'] = float(data.get('aakashBhatia'))
@@ -113,6 +120,7 @@ def upd_ledger():
         investor_dict['Ajay Bhatia'] = float(data.get('ajayBhatia'))
         result = update_ledger(time_period, investor_dict)
         return jsonify({"status":"success", "message":result}), 200
+
     except Exception as e:
         return jsonify ({"status":"error", "message":str(e)}), 500
 

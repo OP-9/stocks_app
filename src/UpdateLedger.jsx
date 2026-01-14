@@ -2,7 +2,7 @@ import { useState } from "react";
 
 export default function UpdateLedger () {
     const [loading, setLoading] = useState(false);
-
+    const [canceled, setCanceled] = useState(false);
     const [clicked, setClicked] = useState(false);
 
     const [formData, setFormData] = useState({
@@ -22,34 +22,42 @@ export default function UpdateLedger () {
         });
     };
 
+    const handleCancel = () => {
+    if (canceled){
+      setCanceled(true)
+      setLoading(true)
+    }
+    };
+
     const handleClick = () => {
         if (clicked){
-        setClicked(false);
-        } else{
-        setClicked(true);
-        }
-    };
+            setClicked(false)
+        } else {
+            setClicked(true)}
+    }
+
        
     const handleSubmit = async (e) => {
         setLoading(true)
 
         e.preventDefault();
+        if (clicked){    
+            try {
+                const response = await fetch ('http://localhost:5000/ledger', {
+                    method:'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData) 
+                    })
+                const data = await response.json()
+                alert(data.message)
 
-        try {
-            const response = await fetch ('http://localhost:5000/ledger', {
-                method:'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData) 
-                })
-            const data = await response.json()
-            alert(data.message)
+            } catch (error){
+                console.log("Error :", error)
 
-        } catch (error){
-            console.log("Error :", error)
-
-        } finally {
-            setLoading(false)
-            setClicked(false)
+            } finally {
+                setLoading(false)
+                setClicked(false)
+            }
         }
     };
     return (
@@ -63,10 +71,12 @@ export default function UpdateLedger () {
             <input name="babitaBhatia" placeholder="Babita Bhatia" onChange={handleChange}></input>
             <input name="aakashBhatia" placeholder="Aakash Bhatia" onChange={handleChange}></input>
             <input name="shikharBhatia" placeholder="Shikhar Bhatia" onChange={handleChange}></input>
-            <input name="ajayBhatia" placeholder="Ajay  Bhatia" onChange={handleChange}></input>
-            <button onClick={handleSubmit}>{loading?"Submitting...":"Submit"}</button>
+            <input name="ajayBhatia" placeholder="Ajay Bhatia" onChange={handleChange}></input>
+            <button id='submit_button' onClick={handleSubmit}>{loading && !canceled?"Submitting...":"Submit"}</button>
+            <button id='cancel_button' onClick={handleCancel}>{loading && canceled?"Canceling...":"Cancel"}</button>
         </form>
         ):<button onClick={handleClick}>Update Ledger</button>}
         </>
     )
 }
+

@@ -3,11 +3,9 @@ import pandas as pd
 import yfinance as yf
 import datetime
 
-fullname = r'/Users/oneshpunchinilame/Desktop/Programming/stocks_react_app/Portfolio.xlsx'
-
 stock_names = "" #Initialisation of the variable for flask_file to proceed without errors
 
-def open_wb():
+def open_wb(fullname):
     xw.Book(fullname) 
     workbook_active_name  = active_book_check()
     return workbook_active_name
@@ -347,8 +345,19 @@ def retrieve_stock_data(stock_tickers):
 
 def retrieve_last_update():
     date_and_time = xw.books['Portfolio.xlsx'].sheets['Portfolio']['A2'].value
-    date_and_time = date_and_time.strftime('%d/%m/%Y %I:%M:%S %p')
-    return date_and_time
+    date_and_time = date_and_time.strftime('%d/%m/%Y, %I:%M %p')
+
+    portfolio_value = new_portfolio.sheets['Portfolio']['A4'].value
+    portfolio_value = f"₹ {portfolio_value:,.2f}"
+
+    portfolio_return = new_portfolio.sheets['Portfolio']['A14'].value
+    portfolio_return = f"₹ {portfolio_return:,.2f}"
+
+    portfolio_return_perc = new_portfolio.sheets['Portfolio']['A13'].value
+    portfolio_return_perc = f"{portfolio_return_perc:.2%}"
+
+    
+    return date_and_time, portfolio_value, portfolio_return, portfolio_return_perc
 
 
 def risk_table():
