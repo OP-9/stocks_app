@@ -4,13 +4,25 @@
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from excel_connector import (open_wb, save_workbook, update_portfolio, 
-update_transactions, update_log, update_beta_sheet, stock_names, update_sheets, update_ledger)
 import xlwings as xw
+from excel_connector import (open_wb, save_workbook, update_portfolio, 
+update_transactions, update_log, update_beta_sheet, retrieve_last_update,stock_names, update_sheets, update_ledger)
+from dash_file import create_dash_app
+
+
 
 app = Flask(__name__)
 CORS(app)  # This allows your React app to talk to this server
 
+create_dash_app(app)
+
+@app.route('/last_update', methods=['GET'])
+def update_time():
+    try:
+        date_and_time = retrieve_last_update()
+        return jsonify({"status": "success", "message": date_and_time}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/open_wb', methods=['POST'])
 def open_the_wb():
@@ -32,18 +44,13 @@ def save_wb():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-@app.route('/dashboard', methods=['POST'])
+"""@app.route('/dashboard', methods=['POST'])
 def dashboard():
-    try:
-        if xw.books.active:
-            pass
-        else:
-            open_wb()
+    
+        return jsonify({"status": "success", "message": f"Dashboard has been opened"}), 200"""
 
-        return jsonify({"status": "success", "message": f"Dashboard has been opened"}), 200
-
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+    #except Exception as e:
+    #    return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/update_portfolio', methods=['POST'])
 def upd_portfolio():
@@ -111,4 +118,4 @@ def upd_ledger():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=False, port=5000)

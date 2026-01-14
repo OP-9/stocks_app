@@ -29,7 +29,7 @@ export default function Transactions () {
 
   const handleSubmit = async (e) => {
     setLoading(true);
-
+    if (clicked) {
     e.preventDefault();
         try{
         const response = await fetch('http://localhost:5000/transaction', {
@@ -46,6 +46,7 @@ export default function Transactions () {
         setClicked(false);
         setLoading(false);
       }
+      }
       };
 
   return (
@@ -58,11 +59,10 @@ export default function Transactions () {
       <input name="quantity" placeholder="Quantity: Enter the quantity" onChange={handleChange}></input>
       <input name="price" placeholder="Price: Enter the price of the stock" onChange={handleChange}></input>
       <button onClick={handleSubmit}>{loading?"Submitting...":"Submit"}</button>
+      <button onClick={handleClick}>{loading?"Cancelling...":"Cancel"}</button>
       </form>
       )
       :<button onClick={handleClick}>Transactions</button>}
-    
-    
     </>
   );
 };

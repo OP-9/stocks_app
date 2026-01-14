@@ -18,7 +18,7 @@ export default function OpenWB() {
   };
 
   return (
-      <button onClick={handleClick} style={{margin: "2em", padding: "2em"}}>
+      <button onClick={handleClick} /*style={{margin: "2em", padding: "2em"}}*/>
         {loading? "Opening..." : "Open Workbook"}
       </button>
   );

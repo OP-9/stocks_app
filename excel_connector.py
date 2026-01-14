@@ -5,6 +5,8 @@ import datetime
 
 fullname = r'/Users/oneshpunchinilame/Desktop/Programming/stocks_react_app/Portfolio.xlsx'
 
+stock_names = "" #Initialisation of the variable for flask_file to proceed without errors
+
 def open_wb():
     xw.Book(fullname) 
     workbook_active_name  = active_book_check()
@@ -343,6 +345,11 @@ def retrieve_stock_data(stock_tickers):
     stock_data = yf.Tickers(stock_tickers)
     return stock_data
 
+def retrieve_last_update():
+    date_and_time = xw.books['Portfolio.xlsx'].sheets['Portfolio']['A2'].value
+    date_and_time = date_and_time.strftime('%d/%m/%Y %I:%M:%S %p')
+    return date_and_time
+
 
 def risk_table():
     sheet_ledger = new_portfolio.sheets['Ledger']
@@ -489,6 +496,7 @@ def update_log():
 
 def update_portfolio():
     print("\nStarting Portfolio Update\n")
+    new_portfolio = xw.books[active_book_check()]
     money_invested_sum = float(new_portfolio.sheets['Funds_Portfolio']['A4'].value)
     stock_tickers = ', '.join(stock_names)
     new_portfolio.sheets['Portfolio']['A12'].value = "Returns"
@@ -644,12 +652,9 @@ def update_transactions(date, symbol, action, quantity, price):  #Function to ad
 
 #LEAVE THE ITEMS BELOW UNCOMMENTED
 
-try:
-    new_portfolio = xw.books['Portfolio.xlsx']
-    (stocks_dict, stock_tickers, stock_names, quantity_list, money_invested, money_invested_sum,
-    start_dates, sector, risk, portfolio_start_date, portfolio_df) = excel_reader()
-except xw.XlwingsError:
-    pass
 
+new_portfolio = xw.books['Portfolio.xlsx']
+(stocks_dict, stock_tickers, stock_names, quantity_list, money_invested, money_invested_sum,
+start_dates, sector, risk, portfolio_start_date, portfolio_df) = excel_reader()
 
 

@@ -9,7 +9,11 @@ import UpdateLog from './UpdateLog';
 import UpdateBetaSheet from './UpdateBetaSheet';
 import UpdateSheets from './UpdateSheets';
 import UpdateLedger from './UpdateLedger';
+import LastUpdate from './LastUpdate';
 
+
+const today = new Date();
+const formattedDate = today.toLocaleDateString('en-GB');
 
 function App(){
 
@@ -18,35 +22,23 @@ function App(){
     <>
     <div>
       <h1>Stocks Portfolio</h1>
-      <h3>Date</h3>
-      <h3>Last Updated</h3>
+      <h3>Date: {formattedDate}</h3>
+      <h3><LastUpdate/></h3>
     </div>
     <div>
-      <>
         <OpenWB/>
-      </>
-      <>
         <Dashboard/>
-      </>
-      <>
         <SaveWB/>
-      </>
     </div>
     <div>
-      <>
         <UpdatePortfolio/>
-      </>
-      <>
         <Transactions/>
-      </>
-      <>
         <UpdateLog/>
-      </>
     </div>
     <div>
-      <><UpdateBetaSheet/></>
-      <><UpdateSheets/></>
-      <><UpdateLedger/></>
+      <UpdateBetaSheet/>
+      <UpdateSheets/>
+      <UpdateLedger/>
     </div>
     </>
   )
