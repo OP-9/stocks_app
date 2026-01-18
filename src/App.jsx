@@ -9,6 +9,7 @@ import UpdateBetaSheet from './UpdateBetaSheet';
 import UpdateSheets from './UpdateSheets';
 import UpdateLedger from './UpdateLedger';
 import LastUpdate from './LastUpdate';
+import { useState } from 'react';
 
 
 const today = new Date();
@@ -19,18 +20,24 @@ const longDate = new Intl.DateTimeFormat('en-GB', options).format(today)
 
 function App(){
 
+  const [update, setUpdate] =useState(false);
+
+  const onUpdate = () => {
+    setUpdate(true)
+  };
+
 
   return (
     <>
       <div style={{gridArea:'titles',}}>
         <h1>Portfolio</h1>
         <h3>{longDate}</h3>
-        <><LastUpdate/></> 
+        <><LastUpdate update = {update} resetUpdate={() => setUpdate(false)}/></> 
       </div>
       <div className='container'>
         <div className='box' style={{display:'flex', flexDirection:'column'}}>
             <OpenWB/>
-            <UpdatePortfolio/>
+            <UpdatePortfolio onUpdate={onUpdate}/>
             <UpdateSheets/>
         </div>
         <div className='box' style={{display:'flex', flexDirection:'column'}}>

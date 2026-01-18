@@ -1,17 +1,20 @@
 import { useState } from "react";
 
 
-export default function LastUpdate () {
+
+export default function LastUpdate ({update, resetUpdate}) {
     const [date, setDate] = useState(null);
     const [portVal, setPortVal] = useState(null)
     const [invAmt, setInvAmt] = useState(null)
     const [portReturns, setPortReturns] = useState(null)
     const [portReturnsPerc, setPortReturnsPerc] = useState(null)
-    const [isHovering, setIsHovering] = useState(false)
+    //const [isHovering, setIsHovering] = useState(false)
     
-    const handleMouseEnter = async () => {
-        setIsHovering(true);
-        try {
+    //const handleMouseEnter = async () => {
+      //  setIsHovering(true);
+        
+        const tempFunc = async () =>{
+            try {
             const response = await fetch('http://localhost:5000/last_update', 
                 {method: 'GET'}
             );
@@ -21,22 +24,28 @@ export default function LastUpdate () {
             setInvAmt(data.invested_amount);
             setPortReturns(data.portfolio_return);
             setPortReturnsPerc(data.portfolio_return_perc);
-        } catch (error) {
+            } catch (error) {
             console.log("Error :", error)
             setDate("Unable to retrieve last update");
-        } 
-        };
+            } finally {
+                resetUpdate()
+            }
+            }   ;
 
-    const handleMouseLeave = () => {
-        setIsHovering(false);
+        if (update){
+            tempFunc()
         }
+
+    //const handleMouseLeave = () => {
+     //   setIsHovering(false);
+      //  }
 
   return (
         <>
             <div> 
-                <p onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}>Last Updated on: {date? date: " Hover to view the info \
-                from when the Portfolio workbook was last updated. "}</p>
+                <p //onMouseEnter={handleMouseEnter}onMouseLeave={handleMouseLeave}
+                >Last Updated on: {date? date: "Click on Update Portfolio to preview portfolio info"/*: " Hover to view the info \
+                from when the Portfolio workbook was last updated. "*/}</p>
             </div>
             <div style={{display:"grid", gridTemplateColumns:"repeat(4, 1fr)"}}>
                 <p>Portfolio Value</p>

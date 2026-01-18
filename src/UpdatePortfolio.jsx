@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function UpdatePortfolio () {
+export default function UpdatePortfolio ({onUpdate}) {
     const [loading, setLoading] = useState(false);
 
     const handleClick = async () => {
@@ -16,6 +16,7 @@ export default function UpdatePortfolio () {
         }
         finally{
             setLoading(false)
+            onUpdate()
         }
     };
 
