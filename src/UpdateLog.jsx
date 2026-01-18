@@ -7,7 +7,7 @@ export default function UpdateLog () {
         setLoading(true);
         try{
             const response = await fetch ('http://localhost:5000/log', {
-            method:'Post'});
+            method:'POST'});
             const data = await response.json();
             alert(data.message)
         } catch (error) {

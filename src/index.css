@@ -29,7 +29,7 @@ a:hover {
 }
 
 body {
-  margin: 0;
+  margin: 0 1rem 1rem 1rem;
   display: grid;
   place-items: center;
   min-width: 320px;
@@ -73,6 +73,7 @@ button:hover {
   background-color: #00246B;
   color: #CADCFC;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
@@ -87,6 +88,7 @@ button:focus-visible {
     font-weight: 500;
     font-family: inherit;
     background-color: green;
+    color: #ffffff;
     cursor: pointer;
     transition: border-color 0.25s;
     width: 50%;
@@ -104,20 +106,14 @@ button:focus-visible {
 }
 
 #footer:hover{
-  color: #E58D2E;
+  color: #D35D2A /*#E58D2E*/;
   transform: scale(1.1);
+  text-shadow:none;
 }
 
 
-@media (prefers-color-scheme: light) {
+@media screen and (max-width:800px) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
+    font-size: 13px;
   }
 }

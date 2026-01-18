@@ -12,7 +12,10 @@ import LastUpdate from './LastUpdate';
 
 
 const today = new Date();
-const formattedDate = today.toLocaleDateString('en-GB');
+//const formattedDate = today.toLocaleDateString('en-GB');
+
+const options = {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'};
+const longDate = new Intl.DateTimeFormat('en-GB', options).format(today)
 
 function App(){
 
@@ -20,8 +23,8 @@ function App(){
   return (
     <>
       <div style={{gridArea:'titles',}}>
-        <h1>Stocks Portfolio</h1>
-        <h3>Date: {formattedDate}</h3>
+        <h1>Portfolio</h1>
+        <h3>{longDate}</h3>
         <><LastUpdate/></> 
       </div>
       <div className='container'>

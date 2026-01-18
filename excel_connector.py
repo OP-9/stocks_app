@@ -3,7 +3,8 @@ import pandas as pd
 import yfinance as yf
 import datetime
 
-stock_names = "" #Initialisation of the variable for flask_file to proceed without errors
+
+stock_names = "" #Initialization of the variable for flask_file to proceed without errors
 
 def open_wb(fullname):
     xw.Book(fullname) 
@@ -22,6 +23,8 @@ def save_workbook():
 
 
 def add_data_to_portfolio(stock_tickers, money_invested_sum):
+    new_portfolio = xw.books['Portfolio.xlsx']
+    
     sheet1 = new_portfolio.sheets['Portfolio']
 
     (current_price, change, two_hundred_day_average, market_cap, fifty_two_week_high, fifty_two_week_low,
@@ -44,7 +47,7 @@ def add_data_to_portfolio(stock_tickers, money_invested_sum):
 
         today_profit_loss.append(change[-1] * quantity_list[i])
 
-        today_profit_loss_perc.append(current_price[-1] / (current_price[-1] - change[-1]) - 1)
+        today_profit_loss_perc.append(current_price[-1]/(current_price[-1] - change[-1]) -1)
 
         total_profit_loss.append(investment_value[-1] - money_invested[i])
 
@@ -114,8 +117,8 @@ def add_data_to_portfolio(stock_tickers, money_invested_sum):
 
     #Number of Months
     last_row = new_portfolio.sheets['Ledger'].range('A1048576').end('up').row
-    num_of_months = last_row - 4  #First entry of month is in cell A5 of Ledger (inclusive of the first month)
-    new_portfolio.sheets['Portfolio']['A19'].value = num_of_months  #Updates Portfolio page
+    num_of_months = last_row - 4 #First entry of month is in cell A5 of Ledger (inclusive of the first month)
+    new_portfolio.sheets['Portfolio']['A19'].value = num_of_months #Updates Portfolio page
 
     #Allocation
     last_row_portfolio = new_portfolio.sheets['Portfolio'].range('C1048576').end('up').row
@@ -232,7 +235,7 @@ def create_book():
     sheet_ledger.range('M:M').number_format = '0.00%'
     sheet_ledger['N11'].formula = '=L11 * 1.14'
     sheet_ledger['O11'].formula = '=O5 + O6 + O7 + O8 + O9'
-    sheet_ledger['P11'].formula = '=O11/L11-1'
+    sheet_ledger['P11'].formula ='=O11/L11-1'
     sheet_ledger['P11'].number_format = '0.00%'
 
     new_portfolio.sheets['Ledger'].autofit()
@@ -246,6 +249,8 @@ def create_book():
 
 
 def create_stock_sheets(stock_names):
+    new_portfolio = xw.books['Portfolio.xlsx']
+
     print('\nCreating Sheets...\n')
     stocks_download = yf.download(stock_tickers, start=portfolio_start_date)
     stocks_download = stocks_download['Close']
@@ -274,6 +279,8 @@ def create_stock_sheets(stock_names):
 
 
 def excel_reader():
+    new_portfolio = xw.books['Portfolio.xlsx']
+
     #Identifying the last used cell in sheet Portfolio, indicates end of table
     last_row = new_portfolio.sheets['Portfolio'].range('C1048576').end('up').row
     portfolio_df = new_portfolio.sheets['Portfolio'].range('C2:S' + str(last_row)).options(pd.DataFrame, header=1,
@@ -300,12 +307,13 @@ def excel_reader():
 
 #Add a minimum of two initial stocks
 def initial_stock_tickers():
+    new_portfolio = xw.books['Portfolio.xlsx']
+
     stocks_dict = {}
     start_dates, quantity_list, money_invested, risk, sector = [[] for i in range(5)]
     portfolio_start_date = input('Enter the date on which this portfolio was started in DD/MM/YYYY: ')
     new_portfolio.sheets['Portfolio']['A17'].value = portfolio_start_date
-    print(
-        "Enter the initial ticker symbols in one sentence below, separating each symbol with a comma, like so: AAPL, GOOGL ")
+    print("Enter the intial ticker symbols in one sentence below, seperating each symbol with a comma, like so: AAPL, GOOGL ")
     stock_tickers = input("Enter the ticker symbols: ")
     stock_names = stock_tickers.split(', ')
     new_portfolio.sheets['Transaction History']['N5'].value = stock_names
@@ -344,23 +352,31 @@ def retrieve_stock_data(stock_tickers):
     return stock_data
 
 def retrieve_last_update():
-    date_and_time = xw.books['Portfolio.xlsx'].sheets['Portfolio']['A2'].value
+    new_portfolio = xw.books['Portfolio.xlsx']
+
+    date_and_time = new_portfolio.sheets['Portfolio']['A2'].value
+    #date_and_time = date_and_time.replace(" ", ", ")
     date_and_time = date_and_time.strftime('%d/%m/%Y, %I:%M %p')
 
-    portfolio_value = new_portfolio.sheets['Portfolio']['A4'].value
+    portfolio_value = float(new_portfolio.sheets['Portfolio']['A4'].value)
     portfolio_value = f"₹ {portfolio_value:,.2f}"
 
-    portfolio_return = new_portfolio.sheets['Portfolio']['A14'].value
+    invested_amount = float(new_portfolio.sheets['Portfolio']['A7'].value)
+    invested_amount = f"₹ {invested_amount:,.2f}"
+
+    portfolio_return = float(new_portfolio.sheets['Portfolio']['A14'].value)
     portfolio_return = f"₹ {portfolio_return:,.2f}"
 
-    portfolio_return_perc = new_portfolio.sheets['Portfolio']['A13'].value
+    portfolio_return_perc = float(new_portfolio.sheets['Portfolio']['A13'].value)
     portfolio_return_perc = f"{portfolio_return_perc:.2%}"
 
     
-    return date_and_time, portfolio_value, portfolio_return, portfolio_return_perc
+    return date_and_time, portfolio_value, invested_amount, portfolio_return, portfolio_return_perc
 
 
 def risk_table():
+    new_portfolio = xw.books['Portfolio.xlsx']
+
     sheet_ledger = new_portfolio.sheets['Ledger']
     sheet_ledger['R5'].value = 'Portfolio Value'
     sheet_ledger['S5'].value = new_portfolio.sheets['Portfolio']['A4'].value
@@ -403,6 +419,8 @@ def risk_table():
 
 
 def update_beta_sheet(stock_names):
+    new_portfolio = xw.books['Portfolio.xlsx']
+
     print("\nUpdating Beta Sheet...")
     portfolio_weight = list(portfolio_df['Allocation'])
     new_portfolio.sheets['Beta']['K3'].value = stock_names
@@ -452,6 +470,8 @@ def update_beta_sheet(stock_names):
 
 
 def update_ledger(time_period, investor_dict):
+    new_portfolio = xw.books['Portfolio.xlsx']
+
     ledger_df = new_portfolio.sheets['Ledger'].range('I4:P9').options(pd.DataFrame, header=1, index=False).value
 
     ledger_df['Amount Invested'] = ledger_df['Amount Invested'].astype(float)
@@ -481,6 +501,7 @@ def update_ledger(time_period, investor_dict):
 
 
 def update_log():
+    new_portfolio = xw.books['Portfolio.xlsx']
     last_row = new_portfolio.sheets['Log'].range('C1048576').end('up').row
     prev_date = new_portfolio.sheets['Log']['C' + str(last_row)].value
     print(f"\nThe log was last updated on: {prev_date}\n")
@@ -504,6 +525,7 @@ def update_log():
 
 
 def update_portfolio():
+    new_portfolio = xw.books['Portfolio.xlsx']
     print("\nStarting Portfolio Update\n")
     new_portfolio = xw.books[active_book_check()]
     money_invested_sum = float(new_portfolio.sheets['Funds_Portfolio']['A4'].value)
@@ -512,11 +534,14 @@ def update_portfolio():
     new_portfolio.sheets['Portfolio']['A13'].formula = '=A4/A7 -1'
     new_portfolio.sheets['Portfolio']['A13'].number_format = "0.00%"
     new_portfolio.sheets['Portfolio']['A14'].formula = '=A4/A7 -1'
+
     add_data_to_portfolio(stock_tickers, money_invested_sum)
+
     print("Update completed :)")
 
 
 def update_portfolio_dashboard(stock_names, quantity_list):
+    new_portfolio = xw.books['Portfolio.xlsx']
     current_price, investment_value, total_profit_loss = [[] for i in range(3)]
     portfolio_sum = float(new_portfolio.sheets['Funds_Portfolio']['A7'].value)
     total_profit = float(new_portfolio.sheets['Funds_Portfolio']['A10'].value)
@@ -536,6 +561,7 @@ def update_portfolio_dashboard(stock_names, quantity_list):
 
 
 def update_sheets(stock_names):
+    new_portfolio = xw.books['Portfolio.xlsx']
     print('\nUpdating Sheets...\n')
     for name in stock_names:
         last_row = new_portfolio.sheets[name].range('H1048576').end('up').row
@@ -557,20 +583,16 @@ def update_sheets(stock_names):
 
 
 def update_transactions(date, symbol, action, quantity, price):  #Function to add new entries to new_portfolio[Transaction History]
+    new_portfolio = xw.books['Portfolio.xlsx']
 
     money_invested_sum = float(new_portfolio.sheets['Portfolio']['A7'].value)
 
-    print('\nNew stocks entry: ')
-    """date = input('\nEnter date of purchase in dd/mm/yyyy format:')
-    symbol = input('Enter the ticker symbol:')
-    action = input('Enter the action, i.e., either a BUY or SELL: ')
-    quantity = float(input('Enter the quantity: '))
-    price = float(input('Enter the price of the stock: '))"""
+    print('\nAdding purchase of stock(s)...')
+    
     if action == 'SELL':
         quantity = -1 * float(quantity)
 
     amount = float(quantity) * float(price)
-
 
     right_most_value = new_portfolio.sheets['Transaction History'].range('N5').end('right').column
     money_invested_sum += amount
@@ -612,11 +634,10 @@ def update_transactions(date, symbol, action, quantity, price):  #Function to ad
         temp_quantity = int(temp_quantity) + int(quantity)
 
         temp_money_invested = stocks_dict[symbol][1]
-        temp_money_invested = int(temp_money_invested) + int(amount)
+        temp_money_invested = float(temp_money_invested) + float(amount)
 
         stocks_dict[symbol] = [temp_quantity, temp_money_invested]
 
-    #add_another = input('Add another entry? Y/N: ')
 
     last_row = new_portfolio.sheets['Transaction History'].range('E1048576').end('up').row
     new_row = 1 + last_row
@@ -636,23 +657,6 @@ def update_transactions(date, symbol, action, quantity, price):  #Function to ad
         money_invested[i] = stocks_dict[stock_names[i]][1]
     new_portfolio.sheets['Transaction History']['N6'].value = quantity_list
 
-    """if add_another == 'Y':
-        print('\nNext Entry\n')
-        update_transactions()
-    elif add_another == 'N':
-        new_portfolio.sheets['Transaction History']['N5'].value = stock_names
-        for i in range(len(stock_names)):
-            quantity_list[i] = stocks_dict[stock_names[i]][0]
-            money_invested[i] = stocks_dict[stock_names[i]][1]
-        new_portfolio.sheets['Transaction History']['N6'].value = quantity_list
-
-        save_or_no = input('Save workbook? Y/N: ')
-        if save_or_no == 'Y':
-            new_portfolio.save()
-            print("Workbook saved!")
-
-    else:
-        print("Data entries haven't been saved yet. Exiting data entry now.")"""
 
     new_portfolio.sheets['Transaction History'].autofit()
 

@@ -2,7 +2,7 @@ import { useState } from "react";
 
 
 export default function Dashboard () {
-    const [clicked, setClicked] = useState(false);
+    /*const [clicked, setClicked] = useState(false);
 
     const handleClick = async () => { //Figure out how to make func recognise that link is open or closed
         if (clicked){
@@ -11,19 +11,18 @@ export default function Dashboard () {
             setClicked(true)
         }
 
-        /*try{
+        try{
             const response = await fetch('http://localhost:5000/dashboard', {
                 method:'POST'});
             const data = await response.json();
             alert(data.message);
         } catch (error){
             console.log("Error: ", error)
-        }*/
-        };
+        }
+        };*/
 
         return (
-            <a onClick={handleClick}
-                id="dashboard_link"
+            <a id="dashboard_link"
                 href="http://localhost:5000/dashboard" 
                 target="_blank" 
                 rel="noopener noreferrer"

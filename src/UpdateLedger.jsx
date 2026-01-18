@@ -64,8 +64,8 @@ export default function UpdateLedger () {
         <>
         {clicked?
         (<form style={{display:"flex", flexDirection:"column"}}>
-            <p>If an investor has paid, add the amount that they have paid.</p>
-            <p>If they haven't paid, input the amount as 0.</p>
+            <p style={{textAlign:"left"}}>If an investor has paid, add the amount that they have paid.
+            If they haven't paid, input the amount as 0</p>
             <input onChange={handleChange} name="timePeriod" placeholder="Enter the period in the following format Aug-24"></input>
             <input name="arunBhatia" placeholder="Arun Bhatia" onChange={handleChange}></input>
             <input name="babitaBhatia" placeholder="Babita Bhatia" onChange={handleChange}></input>

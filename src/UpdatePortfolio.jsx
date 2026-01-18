@@ -7,7 +7,7 @@ export default function UpdatePortfolio () {
         setLoading(true)
         try{
             const response = await fetch ('http://localhost:5000/update_portfolio', {
-        method: 'POST',
+        method: 'PUT',
         });
         const data = await response.json();
         alert(data.message)

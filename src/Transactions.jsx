@@ -12,7 +12,6 @@ export default function Transactions () {
     price:""
   });
 
-  // Handle changes for all inputs dynamically
   const handleClick = () => {
     if (clicked){
       setClicked(false);
@@ -62,6 +61,8 @@ export default function Transactions () {
     <>
     {clicked?(
       <form style={{display: "flex", flexDirection: "column"}}>
+      <p style={{textAlign:"left"}}>If this stock is not in your portfolio, after submitting the details in this form,
+      head over to the terminal to provide more information when prompted by the programme. </p>
       <input name="date" placeholder="Date: in dd/mm/yyyy format" onChange={handleChange}></input>
       <input name="symbol" placeholder="Symbol: Enter the stock symbol" onChange={handleChange}></input>
       <input name="action" placeholder="Action: either a BUY or SELL" onChange={handleChange}></input>

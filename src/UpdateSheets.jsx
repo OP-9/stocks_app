@@ -7,7 +7,7 @@ export default function UpdateSheets () {
         setLoading(true)
 
         try{
-            const response = await fetch ('http://localhost:5000/sheets', {method:'POST'});
+            const response = await fetch ('http://localhost:5000/sheets', {method:'PUT'});
 
             const data = await response.json();
             alert(data.message)

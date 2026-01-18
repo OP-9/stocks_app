@@ -311,7 +311,7 @@ def create_dash_app(flask_app):
     #if __name__ == '__main__':
     #   app.run(debug=True)
 
-    def update_portfolio_dashboard(stock_names,quantity_list):
+    """def update_portfolio_dashboard(stock_names,quantity_list):
         new_portfolio = xw.books['Portfolio.xlsx']
         current_price, investment_value, total_profit_loss = [[] for i in range(3)]
         portfolio_sum = float(new_portfolio.sheets['Funds_Portfolio']['A7'].value)
@@ -329,6 +329,6 @@ def create_dash_app(flask_app):
         total_profit += sum(total_profit_loss)
         new_portfolio.sheets['Portfolio']['A14'].value = total_profit
         new_portfolio.sheets['Portfolio']['A4'].value = portfolio_sum
-        return portfolio_sum
+        return portfolio_sum"""
 
     return dash_app

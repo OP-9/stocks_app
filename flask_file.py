@@ -1,7 +1,3 @@
-import xlwings as xw
-fullname = r'/Users/oneshpunchinilame/Desktop/Programming/stocks_react_app/Portfolio.xlsx'
-xw.Book(fullname) 
-
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
@@ -9,6 +5,8 @@ from excel_connector import (open_wb, save_workbook, update_portfolio,
 update_transactions, update_log, update_beta_sheet, retrieve_last_update,
 stock_names, update_sheets, update_ledger)
 from dash_file import create_dash_app
+
+fullname = r'/Users/oneshpunchinilame/Desktop/Programming/stocks_react_app/Portfolio.xlsx'
 
 
 
@@ -20,11 +18,14 @@ create_dash_app(app)
 @app.route('/last_update', methods=['GET'])
 def update_time():
     try:
-        (date_and_time, portfolio_value, 
+        (date_and_time, portfolio_value, invested_amount,
         portfolio_return, portfolio_return_perc) = retrieve_last_update()
 
-        return jsonify({"status": "success", "date_and_time": date_and_time,
-        "portfolio_value":portfolio_value, "portfolio_return":portfolio_return,
+        return jsonify({"status": "success", 
+        "date_and_time": date_and_time,
+        "portfolio_value":portfolio_value, 
+        "invested_amount": invested_amount,
+        "portfolio_return":portfolio_return,
         "portfolio_return_perc":portfolio_return_perc}), 200
 
     except Exception as e:
@@ -50,15 +51,8 @@ def save_wb():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-"""@app.route('/dashboard', methods=['POST'])
-def dashboard():
-    
-        return jsonify({"status": "success", "message": f"Dashboard has been opened"}), 200
 
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500"""
-
-@app.route('/update_portfolio', methods=['POST'])
+@app.route('/update_portfolio', methods=['PUT'])
 def upd_portfolio():
     try:
         update_portfolio()
@@ -67,18 +61,25 @@ def upd_portfolio():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+
 @app.route('/transaction', methods=['POST'])
 def process_data():
-    data = request.get_json()
-    date = data.get('date')
-    symbol = data.get('symbol')
-    action = data.get('action')
-    quantity = data.get('quantity')
-    price = data.get('price')
-    update_transactions(date, symbol, action, quantity, price)
-    result = f"Portfolio has been updated with the purchase of {symbol}"
-    
-    return jsonify({"status": "success", "message": result})
+    try:
+        data = request.get_json()
+        date = data.get('date')
+        symbol = data.get('symbol').strip()
+        action = data.get('action').strip()
+        quantity = float(data.get('quantity'))
+        price = float(data.get('price'))
+
+        update_transactions(date, symbol, action, quantity, price)
+
+        return jsonify({"status": "success", "message": f"Portfolio has been updated \
+        with the purchase of {symbol}"}), 200
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 
 @app.route('/log', methods=['POST'])
 def log():
@@ -87,6 +88,7 @@ def log():
         return jsonify({"status": "success", "message": result}), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
 
 @app.route('/beta_sheet', methods=['POST'])
 def beta_sheet():
@@ -97,7 +99,7 @@ def beta_sheet():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
-@app.route('/sheets', methods=['POST'])
+@app.route('/sheets', methods=['PUT'])
 def upd_sheets():
     try:
         result = update_sheets(stock_names)
@@ -124,6 +126,3 @@ def upd_ledger():
     except Exception as e:
         return jsonify ({"status":"error", "message":str(e)}), 500
 
-
-if __name__ == '__main__':
-    app.run(debug=False, port=5000)
