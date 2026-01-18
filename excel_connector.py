@@ -3,6 +3,18 @@ import pandas as pd
 import yfinance as yf
 import datetime
 
+from dotenv import load_dotenv 
+import os 
+load_dotenv()
+
+
+#ENTER PATH OF THE EXCEL WORKBOOK BELOW
+fullname = os.getenv("PATH_NAME") 
+print(fullname)
+xw.Book(fullname) 
+
+wb_name = os.getenv("WB_NAME")
+
 
 stock_names = "" #Initialization of the variable for flask_file to proceed without errors
 
@@ -16,14 +28,14 @@ def active_book_check():
 
 def save_workbook():
     workbook_active_name  = active_book_check()
-    xw.books['Portfolio.xlsx'].save()
-    xw.books['Portfolio.xlsx'].close()
+    xw.books[wb_name].save()
+    xw.books[wb_name].close()
     
     return workbook_active_name
 
 
 def add_data_to_portfolio(stock_tickers, money_invested_sum):
-    new_portfolio = xw.books['Portfolio.xlsx']
+    new_portfolio = xw.books[wb_name]
     
     sheet1 = new_portfolio.sheets['Portfolio']
 
@@ -249,7 +261,7 @@ def create_book():
 
 
 def create_stock_sheets(stock_names):
-    new_portfolio = xw.books['Portfolio.xlsx']
+    new_portfolio = xw.books[wb_name]
 
     print('\nCreating Sheets...\n')
     stocks_download = yf.download(stock_tickers, start=portfolio_start_date)
@@ -279,7 +291,7 @@ def create_stock_sheets(stock_names):
 
 
 def excel_reader():
-    new_portfolio = xw.books['Portfolio.xlsx']
+    new_portfolio = xw.books[wb_name]
 
     #Identifying the last used cell in sheet Portfolio, indicates end of table
     last_row = new_portfolio.sheets['Portfolio'].range('C1048576').end('up').row
@@ -307,7 +319,7 @@ def excel_reader():
 
 #Add a minimum of two initial stocks
 def initial_stock_tickers():
-    new_portfolio = xw.books['Portfolio.xlsx']
+    new_portfolio = xw.books[wb_name]
 
     stocks_dict = {}
     start_dates, quantity_list, money_invested, risk, sector = [[] for i in range(5)]
@@ -352,7 +364,7 @@ def retrieve_stock_data(stock_tickers):
     return stock_data
 
 def retrieve_last_update():
-    new_portfolio = xw.books['Portfolio.xlsx']
+    new_portfolio = xw.books[wb_name]
 
     date_and_time = new_portfolio.sheets['Portfolio']['A2'].value
     #date_and_time = date_and_time.replace(" ", ", ")
@@ -375,7 +387,7 @@ def retrieve_last_update():
 
 
 def risk_table():
-    new_portfolio = xw.books['Portfolio.xlsx']
+    new_portfolio = xw.books[wb_name]
 
     sheet_ledger = new_portfolio.sheets['Ledger']
     sheet_ledger['R5'].value = 'Portfolio Value'
@@ -419,7 +431,7 @@ def risk_table():
 
 
 def update_beta_sheet(stock_names):
-    new_portfolio = xw.books['Portfolio.xlsx']
+    new_portfolio = xw.books[wb_name]
 
     print("\nUpdating Beta Sheet...")
     portfolio_weight = list(portfolio_df['Allocation'])
@@ -470,7 +482,7 @@ def update_beta_sheet(stock_names):
 
 
 def update_ledger(time_period, investor_dict):
-    new_portfolio = xw.books['Portfolio.xlsx']
+    new_portfolio = xw.books[wb_name]
 
     ledger_df = new_portfolio.sheets['Ledger'].range('I4:P9').options(pd.DataFrame, header=1, index=False).value
 
@@ -483,11 +495,10 @@ def update_ledger(time_period, investor_dict):
     i = 0
     for investor in ledger_df['Investor']:
         money_added = investor_dict[investor]
-        if investor != "Shikhar Bhatia":
-            if money_added > 0:
-                new_portfolio.sheets['Ledger'].range((last_row + 1, i + 2)).value = "Paid"
-            else:
-                new_portfolio.sheets['Ledger'].range((last_row + 1, i + 2)).value = "Unpaid"
+        if money_added > 0:
+            new_portfolio.sheets['Ledger'].range((last_row + 1, i + 2)).value = "Paid"
+        else:
+            new_portfolio.sheets['Ledger'].range((last_row + 1, i + 2)).value = "Unpaid"
         money_added_list[i] = money_added_list[i] + money_added
         ledger_dict[investor] = ledger_dict[investor] + money_added
         i += 1
@@ -501,7 +512,7 @@ def update_ledger(time_period, investor_dict):
 
 
 def update_log():
-    new_portfolio = xw.books['Portfolio.xlsx']
+    new_portfolio = xw.books[wb_name]
     last_row = new_portfolio.sheets['Log'].range('C1048576').end('up').row
     prev_date = new_portfolio.sheets['Log']['C' + str(last_row)].value
     print(f"\nThe log was last updated on: {prev_date}\n")
@@ -525,7 +536,7 @@ def update_log():
 
 
 def update_portfolio():
-    new_portfolio = xw.books['Portfolio.xlsx']
+    new_portfolio = xw.books[wb_name]
     print("\nStarting Portfolio Update\n")
     new_portfolio = xw.books[active_book_check()]
     money_invested_sum = float(new_portfolio.sheets['Funds_Portfolio']['A4'].value)
@@ -541,7 +552,7 @@ def update_portfolio():
 
 
 def update_portfolio_dashboard(stock_names, quantity_list):
-    new_portfolio = xw.books['Portfolio.xlsx']
+    new_portfolio = xw.books[wb_name]
     current_price, investment_value, total_profit_loss = [[] for i in range(3)]
     portfolio_sum = float(new_portfolio.sheets['Funds_Portfolio']['A7'].value)
     total_profit = float(new_portfolio.sheets['Funds_Portfolio']['A10'].value)
@@ -561,7 +572,7 @@ def update_portfolio_dashboard(stock_names, quantity_list):
 
 
 def update_sheets(stock_names):
-    new_portfolio = xw.books['Portfolio.xlsx']
+    new_portfolio = xw.books[wb_name]
     print('\nUpdating Sheets...\n')
     for name in stock_names:
         last_row = new_portfolio.sheets[name].range('H1048576').end('up').row
@@ -583,7 +594,7 @@ def update_sheets(stock_names):
 
 
 def update_transactions(date, symbol, action, quantity, price):  #Function to add new entries to new_portfolio[Transaction History]
-    new_portfolio = xw.books['Portfolio.xlsx']
+    new_portfolio = xw.books[wb_name]
 
     money_invested_sum = float(new_portfolio.sheets['Portfolio']['A7'].value)
 
@@ -665,8 +676,7 @@ def update_transactions(date, symbol, action, quantity, price):  #Function to ad
 
 #LEAVE THE ITEMS BELOW UNCOMMENTED
 
-
-new_portfolio = xw.books['Portfolio.xlsx']
+new_portfolio = xw.books[wb_name]
 (stocks_dict, stock_tickers, stock_names, quantity_list, money_invested, money_invested_sum,
 start_dates, sector, risk, portfolio_start_date, portfolio_df) = excel_reader()
 

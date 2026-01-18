@@ -1,7 +1,3 @@
-import xlwings as xw
-fullname = r'/Users/oneshpunchinilame/Desktop/Programming/stocks_react_app/Portfolio.xlsx'
-xw.Book(fullname) 
-
 from flask_file import app
 from waitress import serve
 

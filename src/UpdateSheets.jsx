@@ -1,23 +1,27 @@
 import { useState } from "react";
 
-export default function UpdateSheets () {
-    const [loading, setLoading] = useState(false);
+export default function UpdateSheets() {
+  const [loading, setLoading] = useState(false);
 
-    const handleClick = async () => {
-        setLoading(true)
+  const handleClick = async () => {
+    setLoading(true);
 
-        try{
-            const response = await fetch ('http://localhost:5000/sheets', {method:'PUT'});
+    try {
+      const response = await fetch("http://localhost:5000/sheets", {
+        method: "PUT",
+      });
 
-            const data = await response.json();
-            alert(data.message)
-        } catch (error) {
-            console.log("Error :", error)
-        } finally {
-            setLoading(false)
-        }
-    };
-    return (
-        <button onClick={handleClick}>{loading?"Updating Sheets...":"Update Sheets"}</button>
-    )
- }
+      const data = await response.json();
+      alert(data.message);
+    } catch (error) {
+      console.error("Error :", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  return (
+    <button onClick={handleClick}>
+      {loading ? "Updating Sheets..." : "Update Sheets"}
+    </button>
+  );
+}

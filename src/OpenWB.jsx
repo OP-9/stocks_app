@@ -1,12 +1,12 @@
 import { useState } from "react";
 
 export default function OpenWB() {
-    const [loading, setLoading] = useState(false);
-  const handleClick= async () => {
+  const [loading, setLoading] = useState(false);
+  const handleClick = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/open_wb', {
-        method: 'POST',
+      const response = await fetch("http://localhost:5000/open_wb", {
+        method: "POST",
       });
       const data = await response.json();
       alert(data.message);
@@ -18,10 +18,8 @@ export default function OpenWB() {
   };
 
   return (
-      <button onClick={handleClick}>
-        {loading? "Opening..." : "Open Workbook"}
-      </button>
+    <button onClick={handleClick}>
+      {loading ? "Opening..." : "Open Workbook"}
+    </button>
   );
 }
-
-

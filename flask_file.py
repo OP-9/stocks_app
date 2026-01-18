@@ -1,20 +1,20 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from excel_connector import (open_wb, save_workbook, update_portfolio, 
+from excel_connector import (fullname, open_wb, save_workbook, update_portfolio, 
 update_transactions, update_log, update_beta_sheet, retrieve_last_update,
 stock_names, update_sheets, update_ledger)
 from dash_file import create_dash_app
-
-fullname = r'/Users/oneshpunchinilame/Desktop/Programming/stocks_react_app/Portfolio.xlsx'
-
 
 
 app = Flask(__name__)
 CORS(app)  
 
+#CALLING CREATE_DASH_APP FROM DASH_FILE TO LAUNCH THE DASHBOARD
 create_dash_app(app)
 
+
+#DISPLAYS SELECT INFORMATION AS OF THE LAST UPDATE OF THE PORTFOLIO
 @app.route('/last_update', methods=['GET'])
 def update_time():
     try:
@@ -22,6 +22,7 @@ def update_time():
         portfolio_return, portfolio_return_perc) = retrieve_last_update()
 
         return jsonify({"status": "success", 
+        "message": "updated",
         "date_and_time": date_and_time,
         "portfolio_value":portfolio_value, 
         "invested_amount": invested_amount,
@@ -31,6 +32,8 @@ def update_time():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+
+#OPENS THE PORTFOLIO EXCEL WORKBOOK
 @app.route('/open_wb', methods=['POST'])
 def open_the_wb():
     try:
@@ -41,6 +44,8 @@ def open_the_wb():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+
+#SAVES AND CLOSES THE WORKBOOK
 @app.route('/save_wb', methods=['POST'])
 def save_wb():
     try:
@@ -52,6 +57,7 @@ def save_wb():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
+#UPDATES THE PORTFOLIO SHEET
 @app.route('/update_portfolio', methods=['PUT'])
 def upd_portfolio():
     try:
@@ -62,6 +68,7 @@ def upd_portfolio():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
+#ALLOWS USER TO ADD A PURCHASE/SALE OF STOCK(S)
 @app.route('/transaction', methods=['POST'])
 def process_data():
     try:
@@ -81,6 +88,7 @@ def process_data():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
+#UPDATES THE LOG SHEET
 @app.route('/log', methods=['POST'])
 def log():
     try:
@@ -90,6 +98,7 @@ def log():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
+#UPDATES THE BETA SHEET
 @app.route('/beta_sheet', methods=['POST'])
 def beta_sheet():
     try:
@@ -99,6 +108,7 @@ def beta_sheet():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
+#UPDATES THE STOCK SHEETS
 @app.route('/sheets', methods=['PUT'])
 def upd_sheets():
     try:
@@ -108,6 +118,7 @@ def upd_sheets():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
+#UPDATES THE LEDGER
 @app.route('/ledger', methods=['POST'])
 def upd_ledger():
     try:
@@ -115,11 +126,11 @@ def upd_ledger():
         investor_dict = {}
         time_period = data.get('timePeriod')
 
-        investor_dict['Arun Bhatia'] = float(data.get('arunBhatia'))
-        investor_dict['Babita Bhatia'] = float(data.get('babitaBhatia'))
-        investor_dict['Aakash Bhatia'] = float(data.get('aakashBhatia'))
-        investor_dict['Shikhar Bhatia'] = float(data.get('shikharBhatia'))
-        investor_dict['Ajay Bhatia'] = float(data.get('ajayBhatia'))
+        investor_dict['Investor1'] = float(data.get('Investor1'))
+        investor_dict['Investor2'] = float(data.get('Investor2'))
+        investor_dict['Investor3'] = float(data.get('Investor3'))
+        investor_dict['Investor4'] = float(data.get('Investor4'))
+        investor_dict['Investor5'] = float(data.get('Investor5'))
         result = update_ledger(time_period, investor_dict)
         return jsonify({"status":"success", "message":result}), 200
 

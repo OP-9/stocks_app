@@ -1,11 +1,11 @@
 :root {
-  font-family: 'Poppins', Helvetica, Arial, sans-serif;
+  font-family: "Poppins", Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #31473A;
+  background-color: #31473a;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -15,15 +15,15 @@
 
 a {
   font-weight: 500;
-  color: #0B09A7;
+  color: #0b09a7;
   text-decoration: inherit;
 }
 a:hover {
   color: #535bf2;
 }
 
-#dashboard_link{
-  color: #962E2A;
+#dashboard_link {
+  color: #962e2a;
   max-width: 298px;
   max-height: 58;
 }
@@ -38,16 +38,14 @@ body {
 
 .container {
   place-items: center;
-  display:grid;
-  grid-template-columns:repeat(3, 1fr);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   grid-template-rows: auto;
-  
 }
 
 .box {
   max-width: 100%;
 }
-
 
 h1 {
   font-size: 3.2em;
@@ -61,17 +59,19 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #EDF4F2;
-  color: #31473A;
+  background-color: #edf4f2;
+  color: #31473a;
   cursor: pointer;
-  transition: border-color 0.25s, background-color 1s ease-out;
+  transition:
+    border-color 0.25s,
+    background-color 1s ease-out;
   min-width: 12.5rem;
 }
 
 button:hover {
   border-color: #646cff;
-  background-color: #00246B;
-  color: #CADCFC;
+  background-color: #00246b;
+  color: #cadcfc;
 }
 
 button:focus,
@@ -79,40 +79,43 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-#submit_button, #cancel_button {
-    border-radius: 4px;
-    border: 1px solid transparent;
-    padding: 0.3em;
-    margin-bottom: 0.5em;
-    font-size: 0.85em;
-    font-weight: 500;
-    font-family: inherit;
-    background-color: green;
-    color: #ffffff;
-    cursor: pointer;
-    transition: border-color 0.25s;
-    width: 50%;
-    align-self: center;
+#submit_button,
+#cancel_button {
+  border-radius: 4px;
+  border: 1px solid transparent;
+  padding: 0.3em;
+  margin-bottom: 0.5em;
+  font-size: 0.85em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: green;
+  color: #ffffff;
+  cursor: pointer;
+  transition: border-color 0.25s;
+  width: 50%;
+  align-self: center;
 }
 
 #cancel_button {
-    margin-top: 0.5em;
-    background-color: red;
+  margin-top: 0.5em;
+  background-color: red;
 }
 
-#footer{
-  transition: color 1s ease-out, background-color 1s ease-in-out,transform 1.5s ease-out;
-  text-shadow: 2px 2px #962E2A;
+#footer {
+  transition:
+    color 1s ease-out,
+    background-color 1s ease-in-out,
+    transform 1.5s ease-out;
+  text-shadow: 2px 2px #962e2a;
 }
 
-#footer:hover{
-  color: #D35D2A /*#E58D2E*/;
+#footer:hover {
+  color: #d35d2a /*#E58D2E*/;
   transform: scale(1.1);
-  text-shadow:none;
+  text-shadow: none;
 }
 
-
-@media screen and (max-width:800px) {
+@media screen and (max-width: 800px) {
   :root {
     font-size: 13px;
   }

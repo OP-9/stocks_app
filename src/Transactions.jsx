@@ -1,28 +1,28 @@
 import { useState } from "react";
 
-export default function Transactions () {
-    const [clicked, setClicked] = useState(false);
-    const [canceled, setCanceled] = useState(false)
-    const [loading, setLoading] = useState(false)
-    const [formData, setFormData] = useState({
+export default function Transactions() {
+  const [clicked, setClicked] = useState(false);
+  const [canceled, setCanceled] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
     date: "",
     symbol: "",
     action: "",
     quantity: "",
-    price:""
+    price: "",
   });
 
   const handleClick = () => {
-    if (clicked){
+    if (clicked) {
       setClicked(false);
-    } else{
+    } else {
       setClicked(true);
     }
   };
 
   const handleCancel = () => {
-    if (canceled){
-      setCanceled(true)
+    if (canceled) {
+      setCanceled(true);
       setLoading(true);
     }
   };
@@ -30,49 +30,76 @@ export default function Transactions () {
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
   const handleSubmit = async (e) => {
     setLoading(true);
     if (clicked) {
-    e.preventDefault();
-        try{
-        const response = await fetch('http://localhost:5000/transaction', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData) 
+      e.preventDefault();
+      try {
+        const response = await fetch("http://localhost:5000/transaction", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
         });
 
         const data = await response.json();
         alert(data.message);
-      } catch (error){ 
-        console.log("Error: ", error)
+      } catch (error) {
+        console.error("Error: ", error);
       } finally {
         setClicked(false);
         setLoading(false);
-        /*setCanceled(false)*/
       }
-      }
-      };
+    }
+  };
 
   return (
     <>
-    {clicked?(
-      <form style={{display: "flex", flexDirection: "column"}}>
-      <p style={{textAlign:"left"}}>If this stock is not in your portfolio, after submitting the details in this form,
-      head over to the terminal to provide more information when prompted by the programme. </p>
-      <input name="date" placeholder="Date: in dd/mm/yyyy format" onChange={handleChange}></input>
-      <input name="symbol" placeholder="Symbol: Enter the stock symbol" onChange={handleChange}></input>
-      <input name="action" placeholder="Action: either a BUY or SELL" onChange={handleChange}></input>
-      <input name="quantity" placeholder="Quantity: Enter the quantity" onChange={handleChange}></input>
-      <input name="price" placeholder="Price: Enter the price of the stock" onChange={handleChange}></input>
-      <button id='submit_button' onClick={handleSubmit}>{loading && !canceled?"Submitting...":"Submit"}</button>
-      <button id='cancel_button' onClick={handleCancel}>{loading && canceled?"Cancelling...":"Cancel"}</button>
-      </form>
-      )
-      :<button onClick={handleClick}>Transactions</button>}
+      {clicked ? (
+        <form style={{ display: "flex", flexDirection: "column" }}>
+          <p style={{ textAlign: "left" }}>
+            If this stock is not in your portfolio, after submitting the details
+            in this form, head over to the terminal to provide more information
+            when prompted by the programme.{" "}
+          </p>
+          <input
+            name="date"
+            placeholder="Date: in dd/mm/yyyy format"
+            onChange={handleChange}
+          ></input>
+          <input
+            name="symbol"
+            placeholder="Symbol: Enter the stock symbol"
+            onChange={handleChange}
+          ></input>
+          <input
+            name="action"
+            placeholder="Action: either a BUY or SELL"
+            onChange={handleChange}
+          ></input>
+          <input
+            name="quantity"
+            placeholder="Quantity: Enter the quantity"
+            onChange={handleChange}
+          ></input>
+          <input
+            name="price"
+            placeholder="Price: Enter the price of the stock"
+            onChange={handleChange}
+          ></input>
+          <button id="submit_button" onClick={handleSubmit}>
+            {loading && !canceled ? "Submitting..." : "Submit"}
+          </button>
+          <button id="cancel_button" onClick={handleCancel}>
+            {loading && canceled ? "Cancelling..." : "Cancel"}
+          </button>
+        </form>
+      ) : (
+        <button onClick={handleClick}>Transactions</button>
+      )}
     </>
   );
-};
+}

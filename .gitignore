@@ -22,9 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-dummy_react
-Portfolio copy.xlsx
 Portfolio.xlsx
 ~$Portfolio.xlsx
 __pycache__/dash_file.cpython-310.pyc
 .gitignore
+.env
