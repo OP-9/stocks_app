@@ -24,6 +24,7 @@ dist-ssr
 *.sw?
 Portfolio.xlsx
 ~$Portfolio.xlsx
-__pycache__/dash_file.cpython-310.pyc
+__pycache__/
+node_modules
 .gitignore
 .env
