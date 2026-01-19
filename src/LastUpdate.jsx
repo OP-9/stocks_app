@@ -31,6 +31,10 @@ export default function LastUpdate({ update, resetUpdate }) {
     mainFunc();
   }
 
+  //const handleMouseLeave = () => {
+  //   setIsHovering(false);
+  //  }
+
   return (
     <>
       <div>
