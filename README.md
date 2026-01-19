@@ -1,6 +1,6 @@
 # Portfolio Manager Application (stocks_app)
 
-This project was undertaken to help automate processes for a friend's portfolio documentation, which was being maintained on an Excel workbook. The result of this full-stack application has decreased the amount of time he spends maintaining the portfolio daily by 85% and the accuracy of the portfolio has been increased by reducing human error.
+This project was undertaken to help automate processes for a friend's portfolio documentation, which was being maintained on an Excel workbook. The results of this full-stack application is a reduction in the amount of time he spends maintaining the portfolio daily by 85% andan increase in the accuracy of the portfolio by reducing human error.
 
 An Excel workbook with dummy data (Portfolio.xlsx) has been provided for test purposes. In order to create an actual workbook to maintain a portfolio, refer to the earlier iteration of this project [Stocks_Portfolio_Dashboard](https://github.com/OP-9/Stocks_Portfolio_Dashboard).
 
