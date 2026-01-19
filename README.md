@@ -1,16 +1,16 @@
-# React + Vite
+# Portfolio Manager Application (stocks_app)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project was undertaken to help automate processes for a friend's portfolio documentation, which was being maintained on an Excel workbook. The result of this full-stack application has decreased the amount of time he spends maintaining the portfolio daily by 85% and the accuracy of the portfolio has been increased by reducing human error.
 
-Currently, two official plugins are available:
+An Excel workbook with dummy data (Portfolio.xlsx) has been provided for test purposes. In order to create an actual workbook to maintain a portfolio, refer to the earlier iteration of this project [Stocks_Portfolio_Dashboard](https://github.com/OP-9/Stocks_Portfolio_Dashboard).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Setup
 
-## React Compiler
+[Node.js](https://nodejs.org/en/download) is required in order for the application to work.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. Configure an .env file with the following variables:
+   - PATH_NAME = full path of the portfolio workbook
+   - WB_NAME = the name of the workbook, including its extension
+2. Install the necesary modules through the requirements.txt file (pip install -r requirements.txt)
+3. Run run.py
+4. In a seperate terminal, run the following command: npm run dev

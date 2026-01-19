@@ -10,7 +10,6 @@ load_dotenv()
 
 #ENTER PATH OF THE EXCEL WORKBOOK BELOW
 fullname = os.getenv("PATH_NAME") 
-print(fullname)
 xw.Book(fullname) 
 
 wb_name = os.getenv("WB_NAME")
@@ -323,28 +322,30 @@ def initial_stock_tickers():
 
     stocks_dict = {}
     start_dates, quantity_list, money_invested, risk, sector = [[] for i in range(5)]
-    portfolio_start_date = input('Enter the date on which this portfolio was started in DD/MM/YYYY: ')
+    portfolio_start_date = input('Enter the date on which this portfolio was \
+        started in DD/MM/YYYY: ')
     new_portfolio.sheets['Portfolio']['A17'].value = portfolio_start_date
-    print("Enter the intial ticker symbols in one sentence below, seperating each symbol with a comma, like so: AAPL, GOOGL ")
+    print("Enter the intial ticker symbols in one sentence below, seperating each \
+    symbol with a comma, like so: AAPL, GOOGL ")
     stock_tickers = input("Enter the ticker symbols: ")
     stock_names = stock_tickers.split(', ')
     new_portfolio.sheets['Transaction History']['N5'].value = stock_names
-    headings = ['Symbol', 'Start Date', 'Change', 'Current Price', 'Amount', '200 Hundred Day Average',
-                'Money Invested', 'Investment Value', 'Allocation', 'Today Profit and Loss',
-                'Today Profit and Loss (Percentage)', 'Total Profit and Loss', 'Total Profit and Loss (Percentage)',
+    headings = ['Symbol', 'Start Date', 'Change', 'Current Price', 'Amount', 
+                '200 Hundred Day Average', 'Money Invested', 'Investment Value', 
+                'Allocation', 'Today Profit and Loss', 'Today Profit and Loss (Percentage)', 
+                'Total Profit and Loss', 'Total Profit and Loss (Percentage)',
                 '52 Week High', '52 Week Low', 'Sector']
 
     money_invested_sum = new_portfolio.sheets['Funds_Portfolio']['A4'].value
-    print("\nDo not use commas or symbols when entering either the money invested or quantity purchased.\n")
-    print("Did you hear me, Kartik?")
-    print("Sorry, just had to double check.")
-    print("I've seen you be the Spymaster before, so.\n")
+    print("\nDo not use commas or symbols when entering either the money invested \
+        or quantity purchased.\n")
 
     for name in stock_names:
         print(f"\n{name}\n")
         quantity = int(input('Enter the quantity: '))
         money_invested_input = float(input(f"\nEnter the money invested in {name}: "))
-        start_dates.append(input(f"\nEnter the date on which {name} was first purchased in DD/MM/YYYY form: "))
+        start_dates.append(input(f"\nEnter the date on which {name} was first \
+            purchased in DD/MM/YYYY form: "))
         sector.append(input(f"\nEnter the sector of {name}: "))
         risk.append(input(f"\nEnter the risk of {name} (HIGH/LOW): "))
         money_invested.append(money_invested_input)
@@ -437,9 +438,8 @@ def update_beta_sheet(stock_names):
     portfolio_weight = list(portfolio_df['Allocation'])
     new_portfolio.sheets['Beta']['K3'].value = stock_names
     new_portfolio.sheets['Beta']['K5'].value = portfolio_weight
-    #new_portfolio.sheets['Log']['E'+str(new_row)].value = yf.Ticker('^NSEI').get_info()['regularMarketPrice']
     last_row_beta_sheet = new_portfolio.sheets['Beta'].range('J1048576').end('up').row
-    last_update = new_portfolio.sheets['Beta']['J8'].value  #new_portfolio.sheets['Beta']['J'+str(last_row_beta_sheet)].value
+    last_update = new_portfolio.sheets['Beta']['J8'].value  
     stocks_history_download = yf.download('^NSEI', start=last_update)
     stocks_history_download = stocks_history_download['Close']
     stocks_history_download = stocks_history_download.reset_index()

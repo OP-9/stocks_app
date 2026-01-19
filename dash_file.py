@@ -308,27 +308,5 @@ def create_dash_app(flask_app):
         todays_returns = f"{todays_returns:.2%}"
         return html.H3(f"{todays_returns}")
 
-    #if __name__ == '__main__':
-    #   app.run(debug=True)
-
-    """def update_portfolio_dashboard(stock_names,quantity_list):
-        new_portfolio = xw.books['Portfolio.xlsx']
-        current_price, investment_value, total_profit_loss = [[] for i in range(3)]
-        portfolio_sum = float(new_portfolio.sheets['Funds_Portfolio']['A7'].value)
-        #money_invested_sum = new_portfolio.sheets['Funds_Portfolio']['I11'].value
-        total_profit = float(new_portfolio.sheets['Funds_Portfolio']['A10'].value)
-        i =0
-        for name in stock_names:
-            temp_stock = yf.Ticker(name)
-            temp_price = temp_stock.get_info()['regularMarketPrice']
-            current_price.append(temp_price)
-            investment_value.append(temp_price * quantity_list[i])
-            total_profit_loss.append(investment_value[-1] - money_invested[i])
-            i += 1
-        portfolio_sum += sum(investment_value)
-        total_profit += sum(total_profit_loss)
-        new_portfolio.sheets['Portfolio']['A14'].value = total_profit
-        new_portfolio.sheets['Portfolio']['A4'].value = portfolio_sum
-        return portfolio_sum"""
 
     return dash_app
