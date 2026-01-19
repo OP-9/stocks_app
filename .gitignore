@@ -25,6 +25,5 @@ dist-ssr
 Portfolio.xlsx
 ~$Portfolio.xlsx
 __pycache__/
-node_modules
 .gitignore
 .env
