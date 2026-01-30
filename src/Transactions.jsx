@@ -10,6 +10,8 @@ export default function Transactions() {
     action: "",
     quantity: "",
     price: "",
+    sector: "",
+    risk: "",
   });
 
   const handleClick = () => {
@@ -61,9 +63,8 @@ export default function Transactions() {
       {clicked ? (
         <form style={{ display: "flex", flexDirection: "column" }}>
           <p style={{ textAlign: "left" }}>
-            If this stock is not in your portfolio, after submitting the details
-            in this form, head over to the terminal to provide more information
-            when prompted by the programme.{" "}
+            If this stock is not in your portfolio, fill all fields. Otherwise,
+            leave Sector and Risk blank.{" "}
           </p>
           <input
             name="date"
@@ -88,6 +89,16 @@ export default function Transactions() {
           <input
             name="price"
             placeholder="Price: Enter the price of the stock"
+            onChange={handleChange}
+          ></input>
+          <input
+            name="sector"
+            placeholder="Sector: Enter the sector if this stock is not in your portfolio"
+            onChange={handleChange}
+          ></input>
+          <input
+            name="risk"
+            placeholder="Risk: Enter the risk if this stock is not in your portfolio"
             onChange={handleChange}
           ></input>
           <button id="submit_button" onClick={handleSubmit}>

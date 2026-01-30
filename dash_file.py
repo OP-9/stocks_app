@@ -19,11 +19,8 @@ try:
     allocation_df = portfolio_df[['Symbol', 'Allocation']]
     allocation_df.loc[:,'Allocation'] = allocation_df.loc[:,'Allocation'] * 100
 
-    investor_df_og = new_portfolio.sheets['Ledger'].range('I4:S9').options(pd.DataFrame, header=1, index=False).value
-    investor_df = investor_df_og[['Investor', 'Amount Invested', 'Profit/Loss']].copy() #'% Total Fund',
-    investor_df['Profit/Loss'] = investor_df['Profit/Loss'].map('{:.2%}'.format)
-    investor_df['Amount Invested'] = investor_df['Amount Invested'].map('₹{:,.2f}'.format)
 
+    investor_df_og = new_portfolio.sheets['Ledger'].range('I4:P9').options(pd.DataFrame, header=1, index=False).value
 
     sector_df = portfolio_df[['Symbol', 'Sector', 'Allocation']]
     sector_df.loc[:,'Allocation'] = sector_df.loc[:,'Allocation'] * 100
@@ -32,18 +29,13 @@ try:
     sector_returns_df.loc[:,'Today Profit and Loss (Percentage)'] = 100 * sector_returns_df.loc[:,'Today Profit and Loss (Percentage)']
     sector_returns_df.loc[:,'Total Profit and Loss (Percentage)'] = 100 * sector_returns_df.loc[:,'Total Profit and Loss (Percentage)']
 
-    risk_table_df = new_portfolio.sheets['Ledger'].range('R6:W8').options(pd.DataFrame, header=1, index=False).value
-    risk_table_df['Allocation %'] = risk_table_df['Allocation %'].map('{:.2%}'.format)
-    risk_table_df['Current %'] = risk_table_df['Current %'].map('{:.2%}'.format)
-    risk_table_df['Allocation Value'] = risk_table_df['Allocation Value'].map('₹{:,.2f}'.format)
-    risk_table_df['Current Value'] = risk_table_df['Current Value'].map('₹{:,.2f}'.format)
-    risk_table_df['To reduce/add'] = risk_table_df['To reduce/add'].map('₹{:,.2f}'.format)
 
 except:
     pass
 
 
 def create_dash_app(flask_app):
+
     dash_app = dash.Dash(server=flask_app, name="Dashboard", url_base_pathname="/dashboard/")
 
     colors = {
@@ -92,7 +84,7 @@ def create_dash_app(flask_app):
                     html.Div(id='live-update-price_portfolio'),
                         ],style={**card_style, 'textAlign': 'center', 'color': 'black',}),
 
-                    html.Div([  # LIVE DISPLAY OF RETURNS OR MAYBE BEST PERFORMING STOCK ATM
+                    html.Div([  # LIVE DISPLAY OF RETURNS
                         html.H3("Total Return"),
                         html.Div(id='returns',),
                         ],style={**card_style, 'textAlign': 'center', 'color': 'black',}
@@ -142,9 +134,9 @@ def create_dash_app(flask_app):
                 
             html.Div([ #SECTION 7
                 html.Div([  #INVESTOR TABLE
-                    html.H3("Investor Information"),    
-                    dash_table.DataTable(investor_df.to_dict('records'),style_cell={'fontSize':'large',
-                    'height':'74px','verticalAlign': 'middle', 'textAlign':'center'}) #500px / 6 rows
+                    html.H3("Investor Information"), 
+                    dash_table.DataTable(style_cell={'fontSize':'large',
+                    'height':'74px','verticalAlign': 'middle', 'textAlign':'center'}, id = "investor_table") #500px / 6 rows
                     ], style={'width':'50%', 'display':'inline-block', 'textAlign':'center'}),
 
                 html.Div([  #INVESTOR PIE CHART
@@ -157,7 +149,7 @@ def create_dash_app(flask_app):
             html.Div([
                 html.Div([
                     html.H3("Risk and Allocation"),
-                    dash_table.DataTable(risk_table_df.to_dict('records'), 
+                    dash_table.DataTable(
                     style_cell={'fontSize':'large','height':'74px','verticalAlign': 'middle', 'textAlign':'center'},
                     style_data_conditional=[
                 {
@@ -169,13 +161,13 @@ def create_dash_app(flask_app):
                     'color': 'red'
                 }
                 
-                ])
+                ], id = 'risk_table')
                 ])
                 ]),
         
             dcc.Interval( 
                 id='interval-component',
-                interval=30*1000, # in milliseconds
+                interval=300*1000, # in milliseconds
                 n_intervals=0)
             ]
             )
@@ -303,10 +295,36 @@ def create_dash_app(flask_app):
 
     def returns_display(n):
         new_portfolio = xw.books['Portfolio.xlsx']
-        #todays_returns = new_portfolio.sheets['Portfolio']['A13'].value
         todays_returns = new_portfolio.sheets['Portfolio']['A13'].value
         todays_returns = f"{todays_returns:.2%}"
         return html.H3(f"{todays_returns}")
+    
+
+    @dash_app.callback(Output('investor_table', 'data'),
+            Input('interval-component', 'n_intervals'))
+    def update_investor_table(n):
+        investor_df_og = new_portfolio.sheets['Ledger'].range('I4:P9').options(pd.DataFrame, header=1, index=False).value
+        investor_df = investor_df_og[['Investor', 'Amount Invested', 'Profit/Loss']].copy() 
+        investor_df['Profit/Loss'] = investor_df['Profit/Loss'].map('{:.2%}'.format)
+        investor_df['Amount Invested'] = investor_df['Amount Invested'].map('₹{:,.2f}'.format)
+
+            
+        return investor_df.to_dict('records')
+
+
+    @dash_app.callback(Output('risk_table', 'data'),
+                Input('interval-component', 'n_intervals'))
+    def update_risk_table(n):
+        risk_table_df = new_portfolio.sheets['Ledger'].range('R6:W8').options(pd.DataFrame, header=1, index=False).value
+        risk_table_df['Allocation %'] = risk_table_df['Allocation %'].map('{:.2%}'.format)
+        risk_table_df['Current %'] = risk_table_df['Current %'].map('{:.2%}'.format)
+        risk_table_df['Allocation Value'] = risk_table_df['Allocation Value'].map('₹{:,.2f}'.format)
+        risk_table_df['Current Value'] = risk_table_df['Current Value'].map('₹{:,.2f}'.format)
+        risk_table_df['To reduce/add'] = risk_table_df['To reduce/add'].map('₹{:,.2f}'.format)
+            
+        return risk_table_df.to_dict('records')
 
 
     return dash_app
+
+

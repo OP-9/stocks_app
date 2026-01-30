@@ -508,6 +508,8 @@ def update_ledger(time_period, investor_dict):
     new_cell = new_portfolio.sheets['Ledger']['A' + str(last_row + 1)]
     new_cell.value = time_period
 
+
+
     return 'Ledger updated!'
 
 
@@ -593,7 +595,7 @@ def update_sheets(stock_names):
     return "Done updating sheets!"
 
 
-def update_transactions(date, symbol, action, quantity, price):  #Function to add new entries to new_portfolio[Transaction History]
+def update_transactions(date, symbol, action, quantity, price, sector_input=None, risk_input=None):  #Function to add new entries to new_portfolio[Transaction History]
     new_portfolio = xw.books[wb_name]
 
     money_invested_sum = float(new_portfolio.sheets['Portfolio']['A7'].value)
@@ -609,8 +611,8 @@ def update_transactions(date, symbol, action, quantity, price):  #Function to ad
     money_invested_sum += amount
 
     if symbol not in stocks_dict:
-        sector.append(input(f"\nEnter the sector of {symbol}: "))
-        risk.append(input(f"\nEnter the risk of {symbol} (HIGH/LOW): "))
+        sector.append(sector_input)
+        risk.append(risk_input)
         money_invested.append(amount)
         stocks_dict[symbol] = [quantity, amount]
         stock_names.append(symbol)
@@ -671,6 +673,7 @@ def update_transactions(date, symbol, action, quantity, price):  #Function to ad
 
     new_portfolio.sheets['Transaction History'].autofit()
 
+    risk_table()
     update_portfolio()
 
 

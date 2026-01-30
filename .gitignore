@@ -22,9 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-~$Portfolio.xlsx
-.gitignore
 .env
 __pycache__
 
 
+old_Portfolio.xlsx
+Portfolio.xlsx

@@ -78,8 +78,13 @@ def process_data():
         action = data.get('action').strip()
         quantity = float(data.get('quantity'))
         price = float(data.get('price'))
+        sector_input, risk_input = None, None
 
-        update_transactions(date, symbol, action, quantity, price)
+        if data.get('sector') is not None:
+            sector_input = data.get('sector').strip()
+            risk_input = data.get('risk').strip()
+
+        update_transactions(date, symbol, action, quantity, price, sector_input, risk_input)
 
         return jsonify({"status": "success", "message": f"Portfolio has been updated \
         with the purchase of {symbol}"}), 200
