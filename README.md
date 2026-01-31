@@ -1,6 +1,6 @@
 # Portfolio Manager Application (stocks_app)
 
-This project was undertaken to help automate processes for a friend's portfolio documentation, which was being maintained on an Excel workbook. The results of this full-stack application is a reduction in the amount of time he spends maintaining the portfolio daily by 85% and an increase in the accuracy of the portfolio by reducing human error.
+This project was undertaken to help automate processes for a friend's portfolio documentation, which was being maintained on an Excel workbook. The results of this full-stack application are a reduction in the amount of time he spends maintaining the portfolio daily by 85% and an increase in the accuracy of the portfolio by reducing human error.
 
 An Excel workbook with dummy data (Portfolio.xlsx) has been provided for test purposes. In order to create an actual workbook to maintain a portfolio, refer to the earlier iteration of this project [Stocks_Portfolio_Dashboard](https://github.com/OP-9/Stocks_Portfolio_Dashboard).
 
@@ -16,7 +16,3 @@ An Excel workbook with dummy data (Portfolio.xlsx) has been provided for test pu
 2. Install the necesary modules through the requirements.txt file (pip install -r requirements.txt)
 3. Run run.py
 4. In a seperate terminal, run the following command: npm run dev
-
-
-
-

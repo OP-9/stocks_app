@@ -4,14 +4,22 @@ from flask_cors import CORS
 from excel_connector import (fullname, open_wb, save_workbook, update_portfolio, 
 update_transactions, update_log, update_beta_sheet, retrieve_last_update,
 stock_names, update_sheets, update_ledger)
-from dash_file import create_dash_app
+
+
 
 
 app = Flask(__name__)
 CORS(app)  
 
 #CALLING CREATE_DASH_APP FROM DASH_FILE TO LAUNCH THE DASHBOARD
-create_dash_app(app)
+try:
+    from dash_file import create_dash_app
+
+    create_dash_app(app)
+
+except:
+    "Error, could not import the Dash App. Ensure the workbook's name and location are correct and re-run the Flask app."
+
 
 
 #DISPLAYS SELECT INFORMATION AS OF THE LAST UPDATE OF THE PORTFOLIO

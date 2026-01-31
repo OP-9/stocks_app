@@ -9,10 +9,14 @@ load_dotenv()
 
 
 #ENTER PATH OF THE EXCEL WORKBOOK BELOW
-fullname = os.getenv("PATH_NAME") 
-xw.Book(fullname) 
+try:
+    fullname = os.getenv("PATH_NAME") 
+    xw.Book(fullname) 
 
-wb_name = os.getenv("WB_NAME")
+    wb_name = os.getenv("WB_NAME")
+except:
+    "\n Error in locating workbook. Ensure file name & location is correct and re-run the Flask app"
+        
 
 
 stock_names = "" #Initialization of the variable for flask_file to proceed without errors
@@ -679,8 +683,11 @@ def update_transactions(date, symbol, action, quantity, price, sector_input=None
 
 #LEAVE THE ITEMS BELOW UNCOMMENTED
 
-new_portfolio = xw.books[wb_name]
-(stocks_dict, stock_tickers, stock_names, quantity_list, money_invested, money_invested_sum,
-start_dates, sector, risk, portfolio_start_date, portfolio_df) = excel_reader()
+try:
+    new_portfolio = xw.books[wb_name]
+    (stocks_dict, stock_tickers, stock_names, quantity_list, money_invested, money_invested_sum,
+    start_dates, sector, risk, portfolio_start_date, portfolio_df) = excel_reader()
+except:
+    f"\nError opening the workbook. Ensure it is stored in the right directory and re-run the Flask app."
 
 
