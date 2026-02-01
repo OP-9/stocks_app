@@ -70,8 +70,8 @@ def save_wb():
 def upd_portfolio():
     try:
         update_portfolio()
-        risk_table()
-        return jsonify({"status": "success", "message": f"Portfolio has been updated"}), 200
+        
+        return jsonify({"status": "success", "message": "Portfolio has been updated"}), 200
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
@@ -115,8 +115,8 @@ def log():
 @app.route('/beta_sheet', methods=['POST'])
 def beta_sheet():
     try:
-        result = update_beta_sheet(stock_names)
-        return jsonify({"status":"success", "message":result}), 200
+        update_beta_sheet(stock_names)
+        return jsonify({"status":"success", "message":"Done updating Beta sheet!"}), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
@@ -125,8 +125,8 @@ def beta_sheet():
 @app.route('/sheets', methods=['PUT'])
 def upd_sheets():
     try:
-        result = update_sheets(stock_names)
-        return jsonify({"status":"success", "message":result}), 200
+        update_sheets(stock_names)
+        return jsonify({"status":"success", "message":"Done updating sheets!"}), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 

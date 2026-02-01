@@ -59,8 +59,8 @@ def save_workbook():
 
 
 def add_data_to_portfolio(stock_tickers, money_invested_sum):
-    new_portfolio = xw.books[wb_name]
     
+    new_portfolio = xw.books[wb_name]
     sheet1 = new_portfolio.sheets['Portfolio']
 
     (current_price, change, two_hundred_day_average, market_cap, fifty_two_week_high, fifty_two_week_low,
@@ -69,7 +69,7 @@ def add_data_to_portfolio(stock_tickers, money_invested_sum):
 
     portfolio_sum = float(new_portfolio.sheets['Funds_Portfolio']['A7'].value)
 
-    print("\n Retrieving information from Yahoo Finance...")
+    logger.info("Retrieving information from Yahoo Finance...")
     i = 0
     for name in stock_names:
         temp_stock = yf.Ticker(name)
@@ -414,7 +414,13 @@ def retrieve_last_update():
 
 
 def risk_table():
+    logger.info("Starting risk table update")
+
     new_portfolio = xw.books[wb_name]
+
+    last_row = new_portfolio.sheets['Portfolio'].range('C1048576').end('up').row
+    portfolio_df = new_portfolio.sheets['Portfolio'].range('C2:S' + str(last_row)).options(pd.DataFrame, header=1,
+                                                                                           index=False).value
 
     sheet_ledger = new_portfolio.sheets['Ledger']
     sheet_ledger['R5'].value = 'Portfolio Value'
@@ -429,6 +435,8 @@ def risk_table():
     sheet_ledger['R8'].value = ['High Risk', 0.5]
 
     sheet_ledger.range('S7:S8').number_format = "0.00%"
+
+    sheet_ledger.range('O5:O9').formula = '=M5*S$5'
 
     portfolio_df['Risk'] = portfolio_df['Risk'].astype(str)
 
@@ -456,11 +464,18 @@ def risk_table():
 
     sheet_ledger.autofit()
 
+    logger.info("Risk table updated.")
+
 
 def update_beta_sheet(stock_names):
     new_portfolio = xw.books[wb_name]
 
-    print("\nUpdating Beta Sheet...")
+    logger.info("Updating Beta Sheet...")
+
+    last_row = new_portfolio.sheets['Portfolio'].range('C1048576').end('up').row
+    portfolio_df = new_portfolio.sheets['Portfolio'].range('C2:S' + str(last_row)).options(pd.DataFrame, header=1,
+                                                                                           index=False).value
+    
     portfolio_weight = list(portfolio_df['Allocation'])
     new_portfolio.sheets['Beta']['K3'].value = stock_names
     new_portfolio.sheets['Beta']['K5'].value = portfolio_weight
@@ -504,7 +519,7 @@ def update_beta_sheet(stock_names):
     new_portfolio.sheets['Beta']['J7'].value = 'Date'
     new_portfolio.sheets['Beta']['J8'].options(transpose=True).value = list(temp_df_merged['Date'])
     new_portfolio.sheets['Beta'].autofit()
-    return "Done updating Beta sheet!\n"
+    logger.info("Done updating Beta sheet!")
 
 
 def update_ledger(time_period, investor_dict):
@@ -540,10 +555,11 @@ def update_ledger(time_period, investor_dict):
 
 
 def update_log():
+    logger.info("Starting Log Update...")
     new_portfolio = xw.books[wb_name]
     last_row = new_portfolio.sheets['Log'].range('C1048576').end('up').row
     prev_date = new_portfolio.sheets['Log']['C' + str(last_row)].value
-    print(f"\nThe log was last updated on: {prev_date}\n")
+    
     new_row = last_row + 1
     portfolio_value = float(new_portfolio.sheets['Portfolio']['A4'].value)
     prev_portfolio_value = float(new_portfolio.sheets['Log']['D' + str(last_row)].value)
@@ -559,7 +575,7 @@ def update_log():
                                                             float(new_portfolio.sheets['Log']['E' + str(last_row)].value) - 1
     new_portfolio.sheets['Log']['I' + str(new_row)].value = float(new_portfolio.sheets['Log']['F' + str(new_row)].value) / \
                                                             float(new_portfolio.sheets['Log']['F' + str(last_row)].value) - 1
-
+    logger.info("Log Updated")
     return f"\nThe log was last updated on: {prev_date}.\n Log has been updated!\n"
 
 
@@ -575,13 +591,16 @@ def update_portfolio():
     new_portfolio.sheets['Portfolio']['A14'].formula = '=A4/A7 -1'
 
     add_data_to_portfolio(stock_tickers, money_invested_sum)
+
     risk_table()
 
-    logger.info("Update completed :)")
+    logger.info("Update completed :)\n")
 
 
 def update_portfolio_dashboard(stock_names, quantity_list):
     new_portfolio = xw.books[wb_name]
+    (stocks_dict, stock_tickers, stock_names, quantity_list, money_invested, money_invested_sum,
+    start_dates, sector, risk, portfolio_start_date, portfolio_df) = excel_reader()
     current_price, investment_value, total_profit_loss = [[] for i in range(3)]
     portfolio_sum = float(new_portfolio.sheets['Funds_Portfolio']['A7'].value)
     total_profit = float(new_portfolio.sheets['Funds_Portfolio']['A10'].value)
@@ -602,7 +621,7 @@ def update_portfolio_dashboard(stock_names, quantity_list):
 
 def update_sheets(stock_names):
     new_portfolio = xw.books[wb_name]
-    print('\nUpdating Sheets...\n')
+    logger.info('Updating Sheets...')
     for name in stock_names:
         last_row = new_portfolio.sheets[name].range('H1048576').end('up').row
         last_update = new_portfolio.sheets[name]['H' + str(last_row)].value
@@ -619,7 +638,8 @@ def update_sheets(stock_names):
             new_portfolio.sheets[name].range("J5:J500").formula = "=I5/I4 - 1"
             new_portfolio.sheets[name].range("J:J").number_format = "0.00%"
 
-    return "Done updating sheets!"
+    logger.info("Done updating sheets!")
+     
 
 
 def update_transactions(date, symbol, action, quantity, price, sector_input=None, risk_input=None):  #Function to add new entries to new_portfolio[Transaction History]
@@ -627,7 +647,7 @@ def update_transactions(date, symbol, action, quantity, price, sector_input=None
 
     money_invested_sum = float(new_portfolio.sheets['Portfolio']['A7'].value)
 
-    print('\nAdding purchase of stock(s)...')
+    logger.info('Adding purchase of stock(s)...')
     
     global stock_names
     global quantity_list
@@ -746,6 +766,8 @@ def update_transactions(date, symbol, action, quantity, price, sector_input=None
 
     update_portfolio()
     risk_table()
+
+    logger.info('Transaction Updated')
 
 
 #LEAVE THE ITEMS BELOW UNCOMMENTED

@@ -43,10 +43,10 @@ try:
     funds_sector_returns_df = funds_portfolio_df[['Symbol', 'Sector', 'Today Profit and Loss (Percentage)', 'Total Profit and Loss (Percentage)']]
 
     funds_sector_returns_df.loc[:, 'Today Profit and Loss (Percentage)'] = funds_sector_returns_df['Today Profit and Loss (Percentage)'].astype(float).fillna(0) #FILLING NAN WITH 0 TO AVOID FUTURE CONCAT ERROR
-    conmbined_sector_returns_df = pd.concat([sector_returns_df, funds_sector_returns_df], ignore_index=True)
+    combined_sector_returns_df = pd.concat([sector_returns_df, funds_sector_returns_df], ignore_index=True)
 
-    conmbined_sector_returns_df.loc[:,'Today Profit and Loss (Percentage)'] = 100 * conmbined_sector_returns_df.loc[:,'Today Profit and Loss (Percentage)']
-    conmbined_sector_returns_df.loc[:,'Total Profit and Loss (Percentage)'] = 100 * conmbined_sector_returns_df.loc[:,'Total Profit and Loss (Percentage)']
+    combined_sector_returns_df.loc[:,'Today Profit and Loss (Percentage)'] = 100 * combined_sector_returns_df.loc[:,'Today Profit and Loss (Percentage)']
+    combined_sector_returns_df.loc[:,'Total Profit and Loss (Percentage)'] = 100 * combined_sector_returns_df.loc[:,'Total Profit and Loss (Percentage)']
 
     #CREATING DATAFRAME CONTAINING INVESTOR INFORMATION
     investor_df_og = new_portfolio.sheets['Ledger'].range('I4:P9').options(pd.DataFrame, header=1, index=False).value
@@ -285,18 +285,73 @@ try:
                             Input('dropdown-selection-sector-returns', 'value'))
 
         def sector_returns(value):
+            last_row = new_portfolio.sheets['Portfolio'].range('C1048576').end('up').row
+            portfolio_df = new_portfolio.sheets['Portfolio'].range('C2:S' + str(last_row)).options(pd.DataFrame, header=1,
+                                                                                           index=False).value
+            sector_returns_df = portfolio_df[['Symbol', 'Sector', 'Today Profit and Loss (Percentage)', 'Total Profit and Loss (Percentage)']]
+            funds_sector_returns_df = funds_portfolio_df[['Symbol', 'Sector', 'Today Profit and Loss (Percentage)', 'Total Profit and Loss (Percentage)']]
+
+            funds_sector_returns_df.loc[:, 'Today Profit and Loss (Percentage)'] = funds_sector_returns_df['Today Profit and Loss (Percentage)'].astype(float).fillna(0) #FILLING NAN WITH 0 TO AVOID FUTURE CONCAT ERROR
+            combined_sector_returns_df = pd.concat([sector_returns_df, funds_sector_returns_df], ignore_index=True)
+
+            combined_sector_returns_df.loc[:,'Today Profit and Loss (Percentage)'] = 100 * combined_sector_returns_df.loc[:,'Today Profit and Loss (Percentage)']
+            combined_sector_returns_df.loc[:,'Total Profit and Loss (Percentage)'] = 100 * combined_sector_returns_df.loc[:,'Total Profit and Loss (Percentage)']
+            
             if value == 'Daily':
-                figure = px.histogram(conmbined_sector_returns_df, x="Sector", y="Today Profit and Loss (Percentage)", 
+                figure = px.histogram(combined_sector_returns_df, x="Sector", y="Today Profit and Loss (Percentage)", 
                 title="Today's Returns by Sector", 
                 barmode='group', text_auto='.2s')
                 figure.update_traces(marker_color='#9925be')
 
             else:
-                figure = px.histogram(conmbined_sector_returns_df, x="Sector", y="Total Profit and Loss (Percentage)", title="All-time Returns by Sector", 
+                figure = px.histogram(combined_sector_returns_df, x="Sector", y="Total Profit and Loss (Percentage)", title="All-time Returns by Sector", 
                 barmode='group', text_auto='.2s')
             figure.layout.paper_bgcolor = colors['background']
             figure.update_layout(yaxis_title="Profit and Loss in %")
             return figure
+
+
+        @dash_app.callback(Output('sector_graph','figure'),
+                            Input('interval-component', 'n_intervals'))
+
+        def sector_allocation(value):
+            last_row = new_portfolio.sheets['Portfolio'].range('C1048576').end('up').row
+            portfolio_df = new_portfolio.sheets['Portfolio'].range('C2:S' + str(last_row)).options(pd.DataFrame, header=1,
+                                                                                           index=False).value
+            sector_df = portfolio_df[['Symbol', 'Sector', 'Allocation']]
+            sector_funds_portfolio_df = funds_portfolio_df[['Symbol', 'Sector', 'Allocation']]
+
+            combined_sector_df = pd.concat([sector_df, sector_funds_portfolio_df], ignore_index=True)
+            combined_sector_df.loc[:,'Allocation'] = combined_sector_df.loc[:,'Allocation'] * 100
+
+            figure = px.histogram(combined_sector_df, x="Allocation", y="Sector", title="Investment Share by Sector", 
+            barmode='group', text_auto='.2s', labels={"Allocation": "Share Percentage"})
+            return figure
+
+
+        @dash_app.callback(Output('allocation_graph','figure'),
+                            Input('interval-component', 'n_intervals'))
+
+        def portf_allocation(value):
+            last_row = new_portfolio.sheets['Portfolio'].range('C1048576').end('up').row
+            portfolio_df = new_portfolio.sheets['Portfolio'].range('C2:S' + str(last_row)).options(pd.DataFrame, header=1,
+                                                                                           index=False).value
+            allocation_df = portfolio_df[['Symbol', 'Allocation']]
+            last_row = new_portfolio.sheets['Funds_Portfolio'].range('C1048576').end('up').row
+            funds_portfolio_df = new_portfolio.sheets['Funds_Portfolio'].range('C3:S' + str(last_row)).options(pd.DataFrame, header=1,
+                                                                                           index=False).value
+                                            
+            allocation_funds_portfolio_df = funds_portfolio_df[['Symbol', 'Allocation']]
+            
+            combined_allocation_df = pd.concat([allocation_df, allocation_funds_portfolio_df], ignore_index=True)
+            combined_allocation_df.loc[:,'Allocation'] = combined_allocation_df.loc[:,'Allocation'] * 100
+
+            figure = px.bar(combined_allocation_df, x="Allocation", y="Symbol",
+            title="Portfolio Allocation", text_auto='.2s')
+            return figure
+
+
+
 
         @dash_app.callback(Output('time', 'children'),
                     Input('interval-component', 'n_intervals'))
