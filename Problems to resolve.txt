@@ -1,6 +1,0 @@
-Problems to resolve
-
-Risk table seems incorrectly
-
-Beta values don't account for funds portfolio
-
