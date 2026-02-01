@@ -6,18 +6,22 @@ import datetime
 import logging
 
 logger = logging.getLogger(__name__)
+logger.handlers = []
+logger.propagate = False
 logger.setLevel(logging.DEBUG)
 
 console_handler = logging.StreamHandler()
 file_handler = logging.FileHandler('detailed_log.log')
 
-formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
-console_handler.setFormatter(formatter)
-file_handler.setFormatter(formatter)
-
-logger.addHandler(console_handler)
+file_format = logging.Formatter(
+    fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S %Z')
+file_handler.setFormatter(file_format)
 logger.addHandler(file_handler)
 
+
+console_handler.setFormatter(logging.Formatter('%(name)s - %(levelname)s - %(message)s'))
+logger.addHandler(console_handler)
 
 
 from dotenv import load_dotenv 
@@ -26,9 +30,10 @@ load_dotenv()
 
 #ENTER PATH OF THE EXCEL WORKBOOK BELOW
 try:
-    fullname = os.getenv("PATH_NAME") 
-    xw.Book(fullname) 
-
+    fullname = os.getenv("PATH_NAME")
+    logger.info(f'Opening workbook located at {fullname}')
+    xw.Book(fullname)
+    
     wb_name = os.getenv("WB_NAME")
 except:
     "\n Error in locating workbook. Ensure file name & location is correct and re-run the Flask app"
@@ -706,7 +711,6 @@ def update_transactions(date, symbol, action, quantity, price, sector_input=None
             logger.info(f"Deleted {deleted_stock} from stocks_dict")
             to_remove_stock_name.append(stock_names[i])
     
-    logger.info(len(to_remove_stock_name))
     if len(to_remove_stock_name) > 0:   
         last_row = new_portfolio.sheets['Portfolio'].range('C1048576').end('up').row
         portfolio_df = new_portfolio.sheets['Portfolio'].range('C2:S' + str(last_row)).options(pd.DataFrame, header=1,
@@ -715,7 +719,6 @@ def update_transactions(date, symbol, action, quantity, price, sector_input=None
         new_portfolio.sheets['Portfolio'].range('C3:S' + str(last_row)).clear_contents()
         for i in range (len(to_remove_stock_name)):
             stock_removed = to_remove_stock_name.pop()
-            #logger.info(portfolio_df.iloc[i])
             portfolio_df = portfolio_df[portfolio_df['Symbol'] != stock_removed]
             logger.info(f"Deleted {stock_removed} from portfolio_df")
 
@@ -730,7 +733,6 @@ def update_transactions(date, symbol, action, quantity, price, sector_input=None
         stock_tickers = ', '.join(stock_names)
 
         right_most_value = new_portfolio.sheets['Transaction History'].range('N5').end('right').column
-        logger.info(f"right_most_val {right_most_value}")
 
         new_portfolio.sheets['Transaction History'].range((5, right_most_value)).clear_contents()
         new_portfolio.sheets['Transaction History'].range((6, right_most_value)).clear_contents()

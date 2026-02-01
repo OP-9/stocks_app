@@ -1,11 +1,14 @@
 from flask_file import app
 from waitress import serve
+from excel_connector import logger
+
 
 if __name__ == '__main__':
-    print("\nStarting app...\n")
-    app.run(debug=True, port=5000)
-    #print(" Server is running on http://localhost:5173")
+    logger.info("Starting app...\n")
+    #app.run(debug=False, port=5000)
+    #print("Server is running on http://localhost:5173")
     
     #Production WSGI server
-    #serve(app, host='localhost', port=5000)
+    logger.info("Server is running on http://localhost:5173")
+    serve(app, host='localhost', port=5000)
 

@@ -7,10 +7,9 @@ import pandas as pd
 import plotly.graph_objs as go
 import xlwings as xw
 import datetime
-from excel_connector  import logger 
 
 try:
-    from excel_connector import excel_reader, update_portfolio_dashboard, new_portfolio
+    from excel_connector import logger, wb_name, excel_reader, update_portfolio_dashboard, new_portfolio
 
     start_date = new_portfolio.sheets['Portfolio']['A17'].value
     start_date = start_date.strftime('%Y-%m-%d')
@@ -43,7 +42,7 @@ try:
     sector_returns_df = portfolio_df[['Symbol', 'Sector', 'Today Profit and Loss (Percentage)', 'Total Profit and Loss (Percentage)']]
     funds_sector_returns_df = funds_portfolio_df[['Symbol', 'Sector', 'Today Profit and Loss (Percentage)', 'Total Profit and Loss (Percentage)']]
 
-    funds_sector_returns_df['Today Profit and Loss (Percentage)'] = funds_sector_returns_df['Today Profit and Loss (Percentage)'].astype(float).fillna(0) #FILLING NAN WITH 0 TO AVOID FUTURE CONCAT ERROR
+    funds_sector_returns_df.loc[:, 'Today Profit and Loss (Percentage)'] = funds_sector_returns_df['Today Profit and Loss (Percentage)'].astype(float).fillna(0) #FILLING NAN WITH 0 TO AVOID FUTURE CONCAT ERROR
     conmbined_sector_returns_df = pd.concat([sector_returns_df, funds_sector_returns_df], ignore_index=True)
 
     conmbined_sector_returns_df.loc[:,'Today Profit and Loss (Percentage)'] = 100 * conmbined_sector_returns_df.loc[:,'Today Profit and Loss (Percentage)']
@@ -52,10 +51,12 @@ try:
     #CREATING DATAFRAME CONTAINING INVESTOR INFORMATION
     investor_df_og = new_portfolio.sheets['Ledger'].range('I4:P9').options(pd.DataFrame, header=1, index=False).value
 
+    #ADDING CUSTOM FONT 
+    external_stylesheets = ['https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap']
 
     def create_dash_app(flask_app):
 
-        dash_app = dash.Dash(server=flask_app, name="Dashboard", url_base_pathname="/dashboard/")
+        dash_app = dash.Dash(server=flask_app, name="Dashboard", url_base_pathname="/dashboard/", external_stylesheets=external_stylesheets)
 
         colors = {
             'background': '#f8f9fa',
@@ -72,7 +73,7 @@ try:
         }
 
         header_style = {
-            'backgroundColor': '#2596be',
+            'backgroundColor': '#31473a',
             'color': 'white',
             'padding': '20px',
             'borderRadius': '10px',
@@ -85,7 +86,8 @@ try:
         nifty = yf.Ticker(TICKER_SYMBOL)
         name = nifty.info['shortName']
 
-        dash_app.layout = html.Div(style={'fontFamily': 'Lato, Roboto, sans-serif', 'backgroundColor': colors['background'], 'margin':'1%'},
+        
+        dash_app.layout = html.Div(style={'fontFamily': 'Poppins, Lato, Roboto, sans-serif', 'backgroundColor': colors['background'], 'margin':'2%'},
         children = [
 
             html.Div([ #SECTION 1, TITLE
@@ -191,7 +193,7 @@ try:
             Input('interval-component', 'n_intervals'))
 
         def update_div_style(n):
-            new_portfolio = xw.books['Portfolio.xlsx']
+            new_portfolio = xw.books[wb_name]
             todays_returns = 100 * new_portfolio.sheets['Portfolio']['A13'].value
             if todays_returns < 0:
                 return {'color': 'red'}
@@ -202,7 +204,7 @@ try:
             Input('interval-component', 'n_intervals'))
 
         def update_div_style(n):
-            new_portfolio = xw.books['Portfolio.xlsx']
+            new_portfolio = xw.books[wb_name]
             todays_returns = 100 * new_portfolio.sheets['Portfolio']['A13'].value
             if todays_returns < 0:
                 return {'color': 'red'}
@@ -234,7 +236,7 @@ try:
                     Input('interval-component', 'n_intervals'))
 
         def display_nav(n):
-            new_portfolio = xw.books['Portfolio.xlsx']
+            new_portfolio = xw.books[wb_name]
             nav = new_portfolio.sheets['Portfolio']['A25'].value
             nav = f"{nav:.2f}"
             return html.H3(f"{nav}")
@@ -244,7 +246,7 @@ try:
             Input('dropdown-selection','value'))
 
         def nifty_and_nav(n, value):
-            new_portfolio = xw.books['Portfolio.xlsx']
+            new_portfolio = xw.books[wb_name]
             minimum = start_date
             stocks_download = yf.download({TICKER_SYMBOL}, start=start_date)
             stocks_download.reset_index(inplace=True)
@@ -308,7 +310,7 @@ try:
                     Input('interval-component', 'n_intervals' ))
 
         def returns_display(n):
-            new_portfolio = xw.books['Portfolio.xlsx']
+            new_portfolio = xw.books[wb_name]
             todays_returns = new_portfolio.sheets['Portfolio']['A13'].value
             todays_returns = f"{todays_returns:.2%}"
             return html.H3(f"{todays_returns}")
@@ -317,6 +319,7 @@ try:
         @dash_app.callback(Output('investor_table', 'data'),
                 Input('interval-component', 'n_intervals'))
         def update_investor_table(n):
+            new_portfolio = xw.books[wb_name]
             investor_df_og = new_portfolio.sheets['Ledger'].range('I4:P9').options(pd.DataFrame, header=1, index=False).value
             investor_df = investor_df_og[['Investor', 'Amount Invested', 'Investment Value', '% Total Fund','Profit/Loss']].copy() 
             investor_df['Profit/Loss'] = investor_df['Profit/Loss'].map('{:.2%}'.format)
@@ -331,6 +334,7 @@ try:
         @dash_app.callback(Output('risk_table', 'data'),
                     Input('interval-component', 'n_intervals'))
         def update_risk_table(n):
+            new_portfolio = xw.books[wb_name]
             risk_table_df = new_portfolio.sheets['Ledger'].range('R6:W8').options(pd.DataFrame, header=1, index=False).value
             risk_table_df['Allocation %'] = risk_table_df['Allocation %'].map('{:.2%}'.format)
             risk_table_df['Current %'] = risk_table_df['Current %'].map('{:.2%}'.format)
