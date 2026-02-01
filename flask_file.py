@@ -3,7 +3,7 @@ from flask_cors import CORS
 
 from excel_connector import (fullname, open_wb, save_workbook, update_portfolio, 
 update_transactions, update_log, update_beta_sheet, retrieve_last_update,
-stock_names, update_sheets, update_ledger)
+stock_names, update_sheets, update_ledger, risk_table)
 
 
 
@@ -70,6 +70,7 @@ def save_wb():
 def upd_portfolio():
     try:
         update_portfolio()
+        risk_table()
         return jsonify({"status": "success", "message": f"Portfolio has been updated"}), 200
 
     except Exception as e:
@@ -94,8 +95,7 @@ def process_data():
 
         update_transactions(date, symbol, action, quantity, price, sector_input, risk_input)
 
-        return jsonify({"status": "success", "message": f"Portfolio has been updated \
-        with the purchase of {symbol}"}), 200
+        return jsonify({"status": "success", "message": f"Portfolio has been updated with the purchase of {symbol}"}), 200
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500

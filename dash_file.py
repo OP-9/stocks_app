@@ -7,6 +7,7 @@ import pandas as pd
 import plotly.graph_objs as go
 import xlwings as xw
 import datetime
+from excel_connector  import logger 
 
 try:
     from excel_connector import excel_reader, update_portfolio_dashboard, new_portfolio
@@ -16,18 +17,40 @@ try:
 
     stocks_dict, stock_tickers, stock_names, quantity_list, money_invested, money_invested_sum, start_dates, sector, risk, portfolio_start_date, portfolio_df = excel_reader()
 
+    #CREATING DF CONTAINING STOCK'S SHARE OF PORTFOLIO 
     allocation_df = portfolio_df[['Symbol', 'Allocation']]
-    allocation_df.loc[:,'Allocation'] = allocation_df.loc[:,'Allocation'] * 100
+    
+    last_row = new_portfolio.sheets['Funds_Portfolio'].range('C1048576').end('up').row
+    funds_portfolio_df = new_portfolio.sheets['Funds_Portfolio'].range('C3:S' + str(last_row)).options(pd.DataFrame, header=1,
+                                                                                           index=False).value
+    
+    allocation_funds_portfolio_df = funds_portfolio_df[['Symbol', 'Allocation']]
 
-
-    investor_df_og = new_portfolio.sheets['Ledger'].range('I4:P9').options(pd.DataFrame, header=1, index=False).value
+    combined_allocation_df = pd.concat([allocation_df, allocation_funds_portfolio_df], ignore_index=True)
+    
+    combined_allocation_df.loc[:,'Allocation'] = combined_allocation_df.loc[:,'Allocation'] * 100
+    
+    #CREATING DF CONTAINING STOCK'S SECTOR'S SHARE OF PORTFOLIO 
 
     sector_df = portfolio_df[['Symbol', 'Sector', 'Allocation']]
-    sector_df.loc[:,'Allocation'] = sector_df.loc[:,'Allocation'] * 100
+    sector_funds_portfolio_df = funds_portfolio_df[['Symbol', 'Sector', 'Allocation']]
+
+    combined_sector_df = pd.concat([sector_df, sector_funds_portfolio_df], ignore_index=True)
+    combined_sector_df.loc[:,'Allocation'] = combined_sector_df.loc[:,'Allocation'] * 100
+
+    #CREATING DF CONTAINING STOCK'S RETURNS
 
     sector_returns_df = portfolio_df[['Symbol', 'Sector', 'Today Profit and Loss (Percentage)', 'Total Profit and Loss (Percentage)']]
-    sector_returns_df.loc[:,'Today Profit and Loss (Percentage)'] = 100 * sector_returns_df.loc[:,'Today Profit and Loss (Percentage)']
-    sector_returns_df.loc[:,'Total Profit and Loss (Percentage)'] = 100 * sector_returns_df.loc[:,'Total Profit and Loss (Percentage)']
+    funds_sector_returns_df = funds_portfolio_df[['Symbol', 'Sector', 'Today Profit and Loss (Percentage)', 'Total Profit and Loss (Percentage)']]
+
+    funds_sector_returns_df['Today Profit and Loss (Percentage)'] = funds_sector_returns_df['Today Profit and Loss (Percentage)'].astype(float).fillna(0) #FILLING NAN WITH 0 TO AVOID FUTURE CONCAT ERROR
+    conmbined_sector_returns_df = pd.concat([sector_returns_df, funds_sector_returns_df], ignore_index=True)
+
+    conmbined_sector_returns_df.loc[:,'Today Profit and Loss (Percentage)'] = 100 * conmbined_sector_returns_df.loc[:,'Today Profit and Loss (Percentage)']
+    conmbined_sector_returns_df.loc[:,'Total Profit and Loss (Percentage)'] = 100 * conmbined_sector_returns_df.loc[:,'Total Profit and Loss (Percentage)']
+
+    #CREATING DATAFRAME CONTAINING INVESTOR INFORMATION
+    investor_df_og = new_portfolio.sheets['Ledger'].range('I4:P9').options(pd.DataFrame, header=1, index=False).value
 
 
     def create_dash_app(flask_app):
@@ -112,38 +135,34 @@ try:
                 html.Div([  #SECTION 5
                     html.Div([ #ALLOCATION GRAPH
                         dcc.Graph(id='allocation_graph',
-                        figure = px.bar(allocation_df, x="Allocation", y="Symbol",
+                        figure = px.bar(combined_allocation_df, x="Allocation", y="Symbol",
                         title="Portfolio Allocation", text_auto='.2s'))
-                        ],style={'width':'50%', 'display':'inline-block'}),
+                        ],style={'width':'50%', 'height':'40rem','display':'inline-block'}),
 
                     html.Div([ #SECTOR GRAPH
                         dcc.Graph(id='sector_graph',
-                        figure = px.histogram(sector_df, x="Allocation", y="Sector", title="Investment Share by Sector", 
+                        figure = px.histogram(combined_sector_df, x="Allocation", y="Sector", title="Investment Share by Sector", 
                         barmode='group', text_auto='.2s', labels={"Allocation": "Share Percentage"}))
-                        ], style={'width':'50%' ,'display':'inline-block'})
+                        ], style={'width':'50%', 'height':'40rem','display':'inline-block'})
                         ], className="row"),
 
                 html.Div([  #SECTION 6
+                    html.Div([
+                        html.H3("Returns")
+                    ], style={'textAlign':'center'}),
+                    html.Div([
                     dcc.Dropdown(['Daily', 'Total'], 'Daily', id='dropdown-selection-sector-returns'), #DAILY/TOTAL PROFIT BY SECTOR
-                    dcc.Graph(id='graph-sector-returns')
+                    dcc.Graph(id='graph-sector-returns')])
                     ]),
                     
                 html.Div([ #SECTION 7
-                    html.Div([  #INVESTOR TABLE
+                     #INVESTOR TABLE
                         html.H3("Investor Information"), 
                         dash_table.DataTable(style_cell={'fontSize':'large',
                         'height':'74px','verticalAlign': 'middle', 'textAlign':'center'}, id = "investor_table") #500px / 6 rows
-                        ], style={'width':'50%', 'display':'inline-block', 'textAlign':'center'}),
-
-                    html.Div([  #INVESTOR PIE CHART
-                        html.H3("Investor Share of Total Funds", style={'position':'relative', 'bottom':'30%', 'textAlign':'center'}),
-                        dcc.Graph(id='investor-pie-chart',
-                        figure = px.pie(investor_df_og, values='% Total Fund', names='Investor', hole=.6))
-                    ], style={'width':'50%', 'display':'inline-block'})
-                ], className='row'),
+                        ], style={'textAlign':'center', 'margin':'3rem 2rem 3rem'}),
 
                 html.Div([
-                    html.Div([
                         html.H3("Risk and Allocation"),
                         dash_table.DataTable(
                         style_cell={'fontSize':'large','height':'74px','verticalAlign': 'middle', 'textAlign':'center'},
@@ -158,12 +177,11 @@ try:
                     }
                     
                     ], id = 'risk_table')
-                    ])
-                    ]),
+                    ], style={'textAlign':'center', 'margin': '3rem 2rem 2rem'}),
             
                 dcc.Interval( 
                     id='interval-component',
-                    interval=300*1000, # in milliseconds
+                    interval=60*1000, # in milliseconds
                     n_intervals=0)
                 ]
                 )
@@ -266,13 +284,13 @@ try:
 
         def sector_returns(value):
             if value == 'Daily':
-                figure = px.histogram(sector_returns_df, x="Sector", y="Today Profit and Loss (Percentage)", 
+                figure = px.histogram(conmbined_sector_returns_df, x="Sector", y="Today Profit and Loss (Percentage)", 
                 title="Today's Returns by Sector", 
                 barmode='group', text_auto='.2s')
                 figure.update_traces(marker_color='#9925be')
+
             else:
-                
-                figure = px.histogram(sector_returns_df, x="Sector", y="Total Profit and Loss (Percentage)", title="All-time Returns by Sector", 
+                figure = px.histogram(conmbined_sector_returns_df, x="Sector", y="Total Profit and Loss (Percentage)", title="All-time Returns by Sector", 
                 barmode='group', text_auto='.2s')
             figure.layout.paper_bgcolor = colors['background']
             figure.update_layout(yaxis_title="Profit and Loss in %")
@@ -300,9 +318,11 @@ try:
                 Input('interval-component', 'n_intervals'))
         def update_investor_table(n):
             investor_df_og = new_portfolio.sheets['Ledger'].range('I4:P9').options(pd.DataFrame, header=1, index=False).value
-            investor_df = investor_df_og[['Investor', 'Amount Invested', 'Profit/Loss']].copy() 
+            investor_df = investor_df_og[['Investor', 'Amount Invested', 'Investment Value', '% Total Fund','Profit/Loss']].copy() 
             investor_df['Profit/Loss'] = investor_df['Profit/Loss'].map('{:.2%}'.format)
+            investor_df['% Total Fund'] = investor_df['% Total Fund'].map('{:.2%}'.format)
             investor_df['Amount Invested'] = investor_df['Amount Invested'].map('₹{:,.2f}'.format)
+            investor_df['Investment Value'] = investor_df['Investment Value'].map('₹{:,.2f}'.format)
 
                 
             return investor_df.to_dict('records')
@@ -325,5 +345,3 @@ try:
     
 except:
     "\n Error loading the dash application. Please re-run the Flask app.\n"
-
-

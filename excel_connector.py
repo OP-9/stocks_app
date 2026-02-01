@@ -3,10 +3,26 @@ import pandas as pd
 import yfinance as yf
 import datetime
 
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+console_handler = logging.StreamHandler()
+file_handler = logging.FileHandler('detailed_log.log')
+
+formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+console_handler.setFormatter(formatter)
+file_handler.setFormatter(formatter)
+
+logger.addHandler(console_handler)
+logger.addHandler(file_handler)
+
+
+
 from dotenv import load_dotenv 
 import os 
 load_dotenv()
-
 
 #ENTER PATH OF THE EXCEL WORKBOOK BELOW
 try:
@@ -144,7 +160,7 @@ def add_data_to_portfolio(stock_tickers, money_invested_sum):
     sheet1['A24'].value = "NAV"
     sheet1['A25'].formula = '=A4/A10'
 
-    #more_portfolio_calculations(investment_value, portfolio_sum)
+    
     new_portfolio.sheets['Portfolio'].autofit()
 
 
@@ -300,7 +316,8 @@ def excel_reader():
     last_row = new_portfolio.sheets['Portfolio'].range('C1048576').end('up').row
     portfolio_df = new_portfolio.sheets['Portfolio'].range('C2:S' + str(last_row)).options(pd.DataFrame, header=1,
                                                                                            index=False).value
-
+                                                                                   
+    
     money_invested_sum = float(new_portfolio.sheets['Portfolio']['A7'].value)
     portfolio_start_date = new_portfolio.sheets['Portfolio']['A17'].value
     stocks_dict = {}
@@ -543,7 +560,7 @@ def update_log():
 
 def update_portfolio():
     new_portfolio = xw.books[wb_name]
-    print("\nStarting Portfolio Update\n")
+    logger.info("Starting Portfolio Update\n")
     new_portfolio = xw.books[active_book_check()]
     money_invested_sum = float(new_portfolio.sheets['Funds_Portfolio']['A4'].value)
     stock_tickers = ', '.join(stock_names)
@@ -553,8 +570,9 @@ def update_portfolio():
     new_portfolio.sheets['Portfolio']['A14'].formula = '=A4/A7 -1'
 
     add_data_to_portfolio(stock_tickers, money_invested_sum)
+    risk_table()
 
-    print("Update completed :)")
+    logger.info("Update completed :)")
 
 
 def update_portfolio_dashboard(stock_names, quantity_list):
@@ -606,6 +624,15 @@ def update_transactions(date, symbol, action, quantity, price, sector_input=None
 
     print('\nAdding purchase of stock(s)...')
     
+    global stock_names
+    global quantity_list
+    global money_invested
+    global start_dates
+    global sector
+    global risk
+    global stock_tickers
+    global portfolio_df
+
     if action == 'SELL':
         quantity = -1 * float(quantity)
 
@@ -668,17 +695,55 @@ def update_transactions(date, symbol, action, quantity, price, sector_input=None
 
     new_portfolio.sheets['Portfolio']['A7'].value = money_invested_sum
 
-    new_portfolio.sheets['Transaction History']['N5'].value = stock_names
+    to_remove_stock_name = []
+    
     for i in range(len(stock_names)):
         quantity_list[i] = stocks_dict[stock_names[i]][0]
         money_invested[i] = stocks_dict[stock_names[i]][1]
-    new_portfolio.sheets['Transaction History']['N6'].value = quantity_list
 
+        if quantity_list[i] == 0:
+            deleted_stock = stocks_dict.pop(stock_names[i])
+            logger.info(f"Deleted {deleted_stock} from stocks_dict")
+            to_remove_stock_name.append(stock_names[i])
+    
+    logger.info(len(to_remove_stock_name))
+    if len(to_remove_stock_name) > 0:   
+        last_row = new_portfolio.sheets['Portfolio'].range('C1048576').end('up').row
+        portfolio_df = new_portfolio.sheets['Portfolio'].range('C2:S' + str(last_row)).options(pd.DataFrame, header=1,
+                                                                                           index=False).value
+        
+        new_portfolio.sheets['Portfolio'].range('C3:S' + str(last_row)).clear_contents()
+        for i in range (len(to_remove_stock_name)):
+            stock_removed = to_remove_stock_name.pop()
+            #logger.info(portfolio_df.iloc[i])
+            portfolio_df = portfolio_df[portfolio_df['Symbol'] != stock_removed]
+            logger.info(f"Deleted {stock_removed} from portfolio_df")
+
+        new_portfolio.sheets['Portfolio']['C2'].options(index=False).value = portfolio_df
+
+        stock_names = list(portfolio_df['Symbol'])
+        quantity_list = list(portfolio_df['Amount'])
+        money_invested = list(portfolio_df['Money Invested'])
+        start_dates = list(portfolio_df['Start Date'])
+        sector = list(portfolio_df['Sector'])
+        risk = list(portfolio_df['Risk'])
+        stock_tickers = ', '.join(stock_names)
+
+        right_most_value = new_portfolio.sheets['Transaction History'].range('N5').end('right').column
+        logger.info(f"right_most_val {right_most_value}")
+
+        new_portfolio.sheets['Transaction History'].range((5, right_most_value)).clear_contents()
+        new_portfolio.sheets['Transaction History'].range((6, right_most_value)).clear_contents()
+        
+
+    logger.info(quantity_list)
+    new_portfolio.sheets['Transaction History']['N5'].value = stock_names
+    new_portfolio.sheets['Transaction History']['N6'].value = quantity_list
 
     new_portfolio.sheets['Transaction History'].autofit()
 
-    risk_table()
     update_portfolio()
+    risk_table()
 
 
 #LEAVE THE ITEMS BELOW UNCOMMENTED
@@ -689,5 +754,3 @@ try:
     start_dates, sector, risk, portfolio_start_date, portfolio_df) = excel_reader()
 except:
     f"\nError opening the workbook. Ensure it is stored in the right directory and re-run the Flask app."
-
-
