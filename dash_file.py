@@ -58,8 +58,10 @@ try:
 
         dash_app = dash.Dash(server=flask_app, name="Dashboard", url_base_pathname="/dashboard/", external_stylesheets=external_stylesheets)
 
+
+        #Alter colours of general layout, cards, and header
         colors = {
-            'background': '#f8f9fa',
+            'background': 'white',
             'text': 'black',
             'card_background': 'white'
         }
@@ -68,7 +70,7 @@ try:
             'backgroundColor': colors['card_background'],
             'borderRadius': '10px',
             'padding': '20px',
-            'boxShadow': '0 2px 4px rgba(0,0,0,0.1)',
+            'boxShadow': '2px 4px 8px #31473a',
             'marginBottom': '20px'
         }
 
@@ -79,6 +81,10 @@ try:
             'borderRadius': '10px',
             'marginBottom': '30px'
         }
+        
+        #Loading symbol style
+        spinner_type = "dot"
+        spinner_color = "#31473a"
 
         # Ticker symbol to track
         TICKER_SYMBOL = '^NSEI'
@@ -87,7 +93,8 @@ try:
         name = nifty.info['shortName']
 
         
-        dash_app.layout = html.Div(style={'fontFamily': 'Poppins, Lato, Roboto, sans-serif', 'backgroundColor': colors['background'], 'margin':'2%'},
+        dash_app.layout = html.Div(style={'fontFamily': 'Poppins, Lato, Roboto, sans-serif', 
+        'backgroundColor': colors['background'], 'margin':'2%', 'marginBottom':'5rem'},
         children = [
 
             html.Div([ #SECTION 1, TITLE
@@ -96,32 +103,48 @@ try:
                     ]),
                     html.Div([ #SECTION 1, TIME
                         html.Div(id='time')
-                    ])
+                    ], style={'textAlign':'center'})
                     ],style=header_style),
 
                 html.Div([ #SECTION 2
-                        html.Div([  # LIVE DISPLAY OF PORTFOLIO
-                        html.H3("Portfolio Value"),
-                        html.Div(id='live-update-price_portfolio'),
-                            ],style={**card_style, 'textAlign': 'center', 'color': 'black',}),
-
-                        html.Div([  # LIVE DISPLAY OF RETURNS
-                            html.H3("Total Return"),
-                            html.Div(id='returns',),
-                            ],style={**card_style, 'textAlign': 'center', 'color': 'black',}
-                            ),
+                        dcc.Loading(
+                        children=[
+                            # 2. The target component that will be "replaced"
+                            html.Div([  # LIVE DISPLAY OF PORTFOLIO
+                            html.H3("Portfolio Value"),
+                            html.Div(id='live-update-price_portfolio'),
+                            ],style={**card_style, 'textAlign': 'center', 'color': 'black',})], type=spinner_type
+                            , color = spinner_color),
                         
-                        html.Div([
+                        dcc.Loading(
+                        children=[
+                            html.Div([  # LIVE DISPLAY OF RETURNS
+                                html.H3("Total Return"),
+                                html.Div(id='returns',),
+                                ],style={**card_style, 'textAlign': 'center', 'color': 'black',}
+                                )], type=spinner_type, color = spinner_color),
+                        
+                        dcc.Loading(
+                        children=[
+                            html.Div([
                             html.H3("Live Price of NIFTY 50"),
                             html.Div(id='live-update-price-nifty') #NIFTY 50 PRICE UPDATE
-                            ],style={**card_style, 'textAlign': 'center', 'color': 'black',}),
+                            ],style={**card_style, 'textAlign': 'center', 'color': 'black',})], type=spinner_type, 
+                            color = spinner_color),
+                        
+                        dcc.Loading(
+                        children=[
+                            html.Div([
+                                html.H3("Current NAV"),
+                                html.Div(id='live-update-nav'), #NAV UPDATE
+                                ],style={**card_style, 'textAlign': 'center', 'color': 'black',})], type=spinner_type, 
+                                color = spinner_color)
+                        
+                        
 
-                        html.Div([
-                            html.H3("Current NAV"),
-                            html.Div(id='live-update-nav'), #NAV UPDATE
-                            ],style={**card_style, 'textAlign': 'center', 'color': 'black',})
-                        ],style={'display': 'grid', 'gridTemplateColumns': 'repeat(4, 1fr)', 'gap': '20px',
-                        'marginBottom': '30px'}),
+
+                ],style={'display': 'grid', 'gridTemplateColumns': 'repeat(4, 1fr)', 
+                'gap': '20px','marginBottom': '30px'}),
 
                 html.Div([ #SECTION 3
                     html.Div([  #TITLE OF GRAPHS
@@ -149,12 +172,12 @@ try:
                         ], className="row"),
 
                 html.Div([  #SECTION 6
-                    html.Div([
-                        html.H3("Returns")
-                    ], style={'textAlign':'center'}),
-                    html.Div([
-                    dcc.Dropdown(['Daily', 'Total'], 'Daily', id='dropdown-selection-sector-returns'), #DAILY/TOTAL PROFIT BY SECTOR
-                    dcc.Graph(id='graph-sector-returns')])
+                        html.Div([
+                            html.H3("Returns")
+                        ], style={'textAlign':'center'}),
+                        html.Div([
+                        dcc.Dropdown(['Daily', 'Total'], 'Daily', id='dropdown-selection-sector-returns'), #DAILY/TOTAL PROFIT BY SECTOR
+                        dcc.Graph(id='graph-sector-returns')])
                     ]),
                     
                 html.Div([ #SECTION 7
@@ -162,44 +185,48 @@ try:
                         html.H3("Investor Information"), 
                         dash_table.DataTable(style_cell={'fontSize':'large',
                         'height':'74px','verticalAlign': 'middle', 'textAlign':'center'}, id = "investor_table") #500px / 6 rows
-                        ], style={'textAlign':'center', 'margin':'3rem 2rem 3rem'}),
+                    ], style={'textAlign':'center', 'margin':'3rem 2rem 3rem'}),
 
                 html.Div([
                         html.H3("Risk and Allocation"),
                         dash_table.DataTable(
                         style_cell={'fontSize':'large','height':'74px','verticalAlign': 'middle', 'textAlign':'center'},
                         style_data_conditional=[
-                    {
-                        'if': {'filter_query': '{To reduce/add} >= ₹0', 'column_id':'To reduce/add'},
-                        'color': 'green'
-                    },
-                    {
-                        'if': {'filter_query': '{To reduce/add} < ₹0', 'column_id':'To reduce/add'},
-                        'color': 'red'
-                    }
-                    
-                    ], id = 'risk_table')
+                            {
+                                'if': {'filter_query': '{To reduce/add} >= ₹0', 'column_id':'To reduce/add'},
+                                'color': 'green'
+                            },
+                            {
+                                'if': {'filter_query': '{To reduce/add} < ₹0', 'column_id':'To reduce/add'},
+                                'color': 'red'
+                            }
+                        ], id = 'risk_table')
                     ], style={'textAlign':'center', 'margin': '3rem 2rem 2rem'}),
             
                 dcc.Interval( 
                     id='interval-component',
-                    interval=60*1000, # in milliseconds
+                    interval=150*1000, # in milliseconds
                     n_intervals=0)
                 ]
                 )
+                
+
         prevent_initial_call='initial_duplicate'
 
-        @dash_app.callback(Output('returns', 'style'),
+        @dash_app.callback(
+            [Output('live-update-price_portfolio', 'style'),
+            Output('returns', 'style')],
             Input('interval-component', 'n_intervals'))
 
         def update_div_style(n):
             new_portfolio = xw.books[wb_name]
             todays_returns = 100 * new_portfolio.sheets['Portfolio']['A13'].value
             if todays_returns < 0:
-                return {'color': 'red'}
+                return {'color': 'red'}, {'color': 'red'}
             else:
-                return {'color': 'green'}
+                return {'color': 'green'}, {'color': 'green'}
 
+        """
         @dash_app.callback(Output('live-update-price_portfolio', 'style'),
             Input('interval-component', 'n_intervals'))
 
@@ -209,7 +236,7 @@ try:
             if todays_returns < 0:
                 return {'color': 'red'}
             else:
-                return {'color': 'green'}
+                return {'color': 'green'} """
 
         # Callback to update the current price
         @dash_app.callback(Output('live-update-price-nifty', 'children'),
@@ -222,16 +249,22 @@ try:
 
             return html.H3(f"₹ {current_price}")
 
-        @dash_app.callback(Output('live-update-price_portfolio', 'children'),
+        @dash_app.callback(
+            [Output('live-update-price_portfolio', 'children'),
+            Output('returns', 'children'),
+            Output('live-update-nav','children')],
                     Input('interval-component', 'n_intervals'))
 
         def update_live_price(n):
-            current_price = update_portfolio_dashboard(stock_names, quantity_list)
-            current_price= f"{current_price:,.2f}"
+            current_price, todays_returns, nav = update_portfolio_dashboard(stock_names, quantity_list)
             
-            return html.H3(f"₹ {current_price}")
+            current_price= f"{current_price:,.2f}"
+            nav = f"{nav:.2f}"
+            todays_returns = f"{todays_returns:.2%}" 
+            
+            return html.H3(f"₹ {current_price}"), html.H3(f"{todays_returns}"), html.H3(f"{nav}")
 
-
+        """
         @dash_app.callback(Output('live-update-nav','children'),
                     Input('interval-component', 'n_intervals'))
 
@@ -240,6 +273,7 @@ try:
             nav = new_portfolio.sheets['Portfolio']['A25'].value
             nav = f"{nav:.2f}"
             return html.H3(f"{nav}")
+            """
 
         @dash_app.callback(Output('graph-content', 'figure'),
             Input('interval-component', 'n_intervals'),
@@ -351,8 +385,6 @@ try:
             return figure
 
 
-
-
         @dash_app.callback(Output('time', 'children'),
                     Input('interval-component', 'n_intervals'))
 
@@ -361,6 +393,7 @@ try:
             date_and_time = date_and_time.strftime('%d/%m/%Y %I:%M:%S %p')
             return html.H4(f"Last updated on: {date_and_time}", style={'fontWeight': 'normal'})
 
+        """
         @dash_app.callback(Output('returns', 'children'),
                     Input('interval-component', 'n_intervals' ))
 
@@ -368,7 +401,7 @@ try:
             new_portfolio = xw.books[wb_name]
             todays_returns = new_portfolio.sheets['Portfolio']['A13'].value
             todays_returns = f"{todays_returns:.2%}"
-            return html.H3(f"{todays_returns}")
+            return html.H3(f"{todays_returns}") """
         
 
         @dash_app.callback(Output('investor_table', 'data'),

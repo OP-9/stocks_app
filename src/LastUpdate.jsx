@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useEffect } from "react";
 
 export default function LastUpdate({ update, resetUpdate }) {
   const [date, setDate] = useState(null);
@@ -7,33 +8,29 @@ export default function LastUpdate({ update, resetUpdate }) {
   const [portReturns, setPortReturns] = useState(null);
   const [portReturnsPerc, setPortReturnsPerc] = useState(null);
 
-  const mainFunc = async () => {
-    try {
-      const response = await fetch("http://localhost:5000/last_update", {
-        method: "GET",
-      });
-      const data = await response.json();
-      console.log(data.message);
-      setDate(data.date_and_time);
-      setPortVal(data.portfolio_value);
-      setInvAmt(data.invested_amount);
-      setPortReturns(data.portfolio_return);
-      setPortReturnsPerc(data.portfolio_return_perc);
-    } catch (error) {
-      console.log("Error :", error);
-      setDate("Unable to retrieve last update");
-    } finally {
-      resetUpdate();
-    }
-  };
+  useEffect(() => {
+    const mainFunc = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/last_update", {
+          method: "GET",
+        });
+        const data = await response.json();
+        console.log(data.message);
+        setDate(data.date_and_time);
+        setPortVal(data.portfolio_value);
+        setInvAmt(data.invested_amount);
+        setPortReturns(data.portfolio_return);
+        setPortReturnsPerc(data.portfolio_return_perc);
+      } catch (error) {
+        console.log("Error :", error);
+        setDate("Unable to retrieve last update");
+      } finally {
+        resetUpdate();
+      }
+    };
 
-  if (update) {
     mainFunc();
-  }
-
-  //const handleMouseLeave = () => {
-  //   setIsHovering(false);
-  //  }
+  }, [update]);
 
   return (
     <>

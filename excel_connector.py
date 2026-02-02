@@ -616,7 +616,9 @@ def update_portfolio_dashboard(stock_names, quantity_list):
     total_profit += sum(total_profit_loss)
     new_portfolio.sheets['Portfolio']['A14'].value = total_profit
     new_portfolio.sheets['Portfolio']['A4'].value = portfolio_sum
-    return portfolio_sum
+    todays_returns = new_portfolio.sheets['Portfolio']['A13'].value
+    nav = new_portfolio.sheets['Portfolio']['A25'].value
+    return portfolio_sum, todays_returns, nav
 
 
 def update_sheets(stock_names):
