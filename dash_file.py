@@ -158,6 +158,8 @@ try:
                         ],style={'margin':'2em'}),
                     
                 html.Div([  #SECTION 5
+                    html.H3("Allocation & Sector Graphs"),
+
                     html.Div([ #ALLOCATION GRAPH
                         dcc.Graph(id='allocation_graph',
                         figure = px.bar(combined_allocation_df, x="Allocation", y="Symbol",
@@ -169,7 +171,7 @@ try:
                         figure = px.histogram(combined_sector_df, x="Allocation", y="Sector", title="Investment Share by Sector", 
                         barmode='group', text_auto='.2s', labels={"Allocation": "Share Percentage"}))
                         ], style={'width':'50%', 'height':'40rem','display':'inline-block'})
-                        ], className="row"),
+                        ], className="row", style={'textAlign':'center'}),
 
                 html.Div([  #SECTION 6
                         html.Div([
