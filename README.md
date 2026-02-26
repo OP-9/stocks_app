@@ -4,7 +4,8 @@ This project was undertaken to help automate processes for a friend's portfolio 
 
 An Excel workbook with dummy data (Portfolio.xlsx) has been provided for test purposes. In order to create an actual workbook to maintain a portfolio, refer to the earlier iteration of this project [Stocks_Portfolio_Dashboard](https://github.com/OP-9/Stocks_Portfolio_Dashboard).
 
-<img width="1440" height="823" alt="Screenshot of the Portfolio Application" src="https://github.com/user-attachments/assets/a56a7204-6b85-4e02-b5c5-bb8639e36244" />
+<img width="1440" height="812" alt="Screenshot 2026-02-26 at 11 35 21 AM" src="https://github.com/user-attachments/assets/a3c75b24-279b-49c5-b461-15e2e9a1a8ee" />
+
 
 ## Setup
 
