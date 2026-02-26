@@ -1,15 +1,13 @@
 import { useState } from "react";
+import { service } from "../Service";
 
-export default function SaveWB() {
+export default function OpenWB() {
   const [loading, setLoading] = useState(false);
-
   const handleClick = async () => {
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/save_wb", {
-        method: "POST",
-      });
-      const data = await response.json();
+      const data = await service.openWB();
+      //const data = await response.json();
       alert(data.message);
     } catch (error) {
       console.error("Error:", error);
@@ -20,7 +18,7 @@ export default function SaveWB() {
 
   return (
     <button onClick={handleClick}>
-      {loading ? "Saving..." : "Save & Close Workbook"}
+      {loading ? "Opening..." : "Open Workbook"}
     </button>
   );
 }

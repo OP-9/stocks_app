@@ -28,3 +28,5 @@ __pycache__
 
 old_Portfolio.xlsx
 Portfolio.xlsx
+
+.docker/

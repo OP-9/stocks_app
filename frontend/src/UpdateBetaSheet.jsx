@@ -1,17 +1,17 @@
 import { useState } from "react";
+import { service } from "../Service";
 
-export default function OpenWB() {
+export default function UpdateBetaSheet() {
   const [loading, setLoading] = useState(false);
+
   const handleClick = async () => {
     setLoading(true);
+
     try {
-      const response = await fetch("http://localhost:5000/open_wb", {
-        method: "POST",
-      });
-      const data = await response.json();
+      const data = await service.updateBetaSheet();
       alert(data.message);
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error :", error);
     } finally {
       setLoading(false);
     }
@@ -19,7 +19,7 @@ export default function OpenWB() {
 
   return (
     <button onClick={handleClick}>
-      {loading ? "Opening..." : "Open Workbook"}
+      {loading ? "Updating Beta Sheet..." : "Update Beta Sheet"}
     </button>
   );
 }

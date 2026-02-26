@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useEffect } from "react";
+import { service } from "../Service";
 
 export default function LastUpdate({ update, resetUpdate }) {
   const [date, setDate] = useState(null);
@@ -11,10 +12,8 @@ export default function LastUpdate({ update, resetUpdate }) {
   useEffect(() => {
     const mainFunc = async () => {
       try {
-        const response = await fetch("http://localhost:5000/last_update", {
-          method: "GET",
-        });
-        const data = await response.json();
+        const data = await service.getLastUpdate();
+        //const data = await response.json();
         console.log(data.message);
         setDate(data.date_and_time);
         setPortVal(data.portfolio_value);

@@ -1,27 +1,25 @@
 import { useState } from "react";
+import { service } from "../Service";
 
-export default function UpdatePortfolio({ onUpdate }) {
+export default function SaveWB() {
   const [loading, setLoading] = useState(false);
 
   const handleClick = async () => {
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/update_portfolio", {
-        method: "PUT",
-      });
-      const data = await response.json();
+      const data = await service.saveWB();
+      //const data = await response.json();
       alert(data.message);
     } catch (error) {
-      console.error("Error: ", error);
+      console.error("Error:", error);
     } finally {
       setLoading(false);
-      onUpdate();
     }
   };
 
   return (
     <button onClick={handleClick}>
-      {loading ? "Updating..." : " Update Portfolio"}
+      {loading ? "Saving..." : "Save Workbook"}
     </button>
   );
 }

@@ -1,27 +1,23 @@
 import { useState } from "react";
+import { service } from "../Service";
 
-export default function UpdateBetaSheet() {
+export default function UpdateLog() {
   const [loading, setLoading] = useState(false);
 
   const handleClick = async () => {
     setLoading(true);
-
     try {
-      const response = await fetch("http://localhost:5000/beta_sheet", {
-        method: "POST",
-      });
-      const data = await response.json();
+      const data = await service.updateLog();
       alert(data.message);
     } catch (error) {
-      console.error("Error :", error);
+      console.error("Error: ", error);
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <button onClick={handleClick}>
-      {loading ? "Updating Beta Sheet..." : "Update Beta Sheet"}
+      {loading ? "Updating Log..." : "Update Log"}
     </button>
   );
 }

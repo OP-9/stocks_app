@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { service } from "../Service";
 
 export default function UpdateLedger() {
   const [loading, setLoading] = useState(false);
@@ -42,12 +43,7 @@ export default function UpdateLedger() {
     e.preventDefault();
     if (clicked) {
       try {
-        const response = await fetch("http://localhost:5000/ledger", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        });
-        const data = await response.json();
+        const data = await service.updateLedger(formData);
         alert(data.message);
       } catch (error) {
         console.error("Error :", error);

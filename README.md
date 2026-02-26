@@ -8,11 +8,18 @@ An Excel workbook with dummy data (Portfolio.xlsx) has been provided for test pu
 
 ## Setup
 
-[Node.js](https://nodejs.org/en/download) is required in order for the application to work.
-
 1. Configure an .env file with the following variables:
-   - PATH_NAME = full path of the portfolio workbook
+   - PATH_NAME = relative path of the portfolio workbook in the "data" folder.
    - WB_NAME = the name of the workbook, including its extension
-2. Install the necesary modules through the requirements.txt file (pip install -r requirements.txt)
-3. Run run.py
-4. In a seperate terminal, run the following command: npm run dev
+2. Open Docker
+3. Open the Excel workbook and manually save the file every time before running the app. This ensures that cells with formulae will store results in its cache.
+4. Utilise Docker and run the following commands in the IDE terminal:
+   - docker compose build
+   - docker compose run
+   - docker compose down (use this when you want to shut down the app).
+
+"docker compose build" is the command to be run upon running the application for the first time, after which "docker compose run" can be utilised whenever the app needs to be run.
+
+## Warnings
+
+Do not open the Excel workbook while the application is running. This app uses Openpyxl and the chance of corrupting the workbook if it's open while the app is running is high.

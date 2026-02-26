@@ -42,7 +42,6 @@ function App() {
           className="box"
           style={{ display: "flex", flexDirection: "column" }}
         >
-          <OpenWB />
           <UpdatePortfolio onUpdate={onUpdate} />
           <UpdateSheets />
         </div>
@@ -51,15 +50,20 @@ function App() {
           style={{ display: "flex", flexDirection: "column" }}
         >
           <Dashboard />
-          <UpdateLog />
-          <Transactions />
+          <UpdateBetaSheet />
         </div>
         <div
           className="box"
           style={{ display: "flex", flexDirection: "column" }}
         >
           <SaveWB />
-          <UpdateBetaSheet />
+          <Transactions />
+        </div>
+        <div
+          className="box"
+          style={{ display: "flex", flexDirection: "column" }}
+        >
+          <UpdateLog />
           <UpdateLedger />
         </div>
       </div>

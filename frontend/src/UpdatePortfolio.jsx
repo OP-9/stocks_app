@@ -1,25 +1,28 @@
 import { useState } from "react";
+import { service } from "../Service";
 
-export default function UpdateLog() {
+export default function UpdatePortfolio({ onUpdate }) {
   const [loading, setLoading] = useState(false);
 
   const handleClick = async () => {
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/log", {
-        method: "POST",
-      });
-      const data = await response.json();
+      const data = await service.updatePortfolio();
       alert(data.message);
     } catch (error) {
+      if (error.response) {
+        alert(`Error:  ${error.response.data.message}`);
+      }
       console.error("Error: ", error);
     } finally {
       setLoading(false);
+      onUpdate();
     }
   };
+
   return (
     <button onClick={handleClick}>
-      {loading ? "Updating Log..." : "Update Log"}
+      {loading ? "Updating..." : " Update Portfolio"}
     </button>
   );
 }

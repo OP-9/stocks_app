@@ -1,60 +1,50 @@
 import dash
 from dash.dependencies import Output, Input
 from dash import dcc, html, dash_table
+import dash_loading_spinners as dls
 import plotly.express as px
 import yfinance as yf
 import pandas as pd
 import plotly.graph_objs as go
-import xlwings as xw
+import openpyxl
 import datetime
+import logging
+from zoneinfo import ZoneInfo
+
+logger = logging.getLogger('backend')
+
+from excel_connector import Portfolio, timezone
+
+portfolio = Portfolio()
 
 try:
-    from excel_connector import logger, wb_name, excel_reader, update_portfolio_dashboard, new_portfolio
+    wb = portfolio.safe_load()
 
-    start_date = new_portfolio.sheets['Portfolio']['A17'].value
+    result = portfolio.excel_reader()
+
+    if result == 1:
+        print("Error reading Excel workbook. Please manually save the workbook before running this app.")
+    elif result == 0:
+        print("Successfully read Excel workbook!")
+    
+    start_date = wb['Portfolio']['A17'].value
     start_date = start_date.strftime('%Y-%m-%d')
 
-    stocks_dict, stock_tickers, stock_names, quantity_list, money_invested, money_invested_sum, start_dates, sector, risk, portfolio_start_date, portfolio_df = excel_reader()
+    portfolio_df = portfolio.portfolio_df
 
-    #CREATING DF CONTAINING STOCK'S SHARE OF PORTFOLIO 
-    allocation_df = portfolio_df[['Symbol', 'Allocation']]
+    combined_sector_df = portfolio.combined_sector_df
+
+    combined_sector_df['Allocation'] = pd.to_numeric(combined_sector_df['Allocation'], errors='coerce')
     
-    last_row = new_portfolio.sheets['Funds_Portfolio'].range('C1048576').end('up').row
-    funds_portfolio_df = new_portfolio.sheets['Funds_Portfolio'].range('C3:S' + str(last_row)).options(pd.DataFrame, header=1,
-                                                                                           index=False).value
+    combined_allocation_df = portfolio.combined_allocation_df
     
-    allocation_funds_portfolio_df = funds_portfolio_df[['Symbol', 'Allocation']]
-
-    combined_allocation_df = pd.concat([allocation_df, allocation_funds_portfolio_df], ignore_index=True)
-    
-    combined_allocation_df.loc[:,'Allocation'] = combined_allocation_df.loc[:,'Allocation'] * 100
-    
-    #CREATING DF CONTAINING STOCK'S SECTOR'S SHARE OF PORTFOLIO 
-
-    sector_df = portfolio_df[['Symbol', 'Sector', 'Allocation']]
-    sector_funds_portfolio_df = funds_portfolio_df[['Symbol', 'Sector', 'Allocation']]
-
-    combined_sector_df = pd.concat([sector_df, sector_funds_portfolio_df], ignore_index=True)
-    combined_sector_df.loc[:,'Allocation'] = combined_sector_df.loc[:,'Allocation'] * 100
-
-    #CREATING DF CONTAINING STOCK'S RETURNS
-
-    sector_returns_df = portfolio_df[['Symbol', 'Sector', 'Today Profit and Loss (Percentage)', 'Total Profit and Loss (Percentage)']]
-    funds_sector_returns_df = funds_portfolio_df[['Symbol', 'Sector', 'Today Profit and Loss (Percentage)', 'Total Profit and Loss (Percentage)']]
-
-    funds_sector_returns_df.loc[:, 'Today Profit and Loss (Percentage)'] = funds_sector_returns_df['Today Profit and Loss (Percentage)'].astype(float).fillna(0) #FILLING NAN WITH 0 TO AVOID FUTURE CONCAT ERROR
-    combined_sector_returns_df = pd.concat([sector_returns_df, funds_sector_returns_df], ignore_index=True)
-
-    combined_sector_returns_df.loc[:,'Today Profit and Loss (Percentage)'] = 100 * combined_sector_returns_df.loc[:,'Today Profit and Loss (Percentage)']
-    combined_sector_returns_df.loc[:,'Total Profit and Loss (Percentage)'] = 100 * combined_sector_returns_df.loc[:,'Total Profit and Loss (Percentage)']
-
-    #CREATING DATAFRAME CONTAINING INVESTOR INFORMATION
-    investor_df_og = new_portfolio.sheets['Ledger'].range('I4:P9').options(pd.DataFrame, header=1, index=False).value
-
+                                                                                  
     #ADDING CUSTOM FONT 
     external_stylesheets = ['https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap']
 
     def create_dash_app(flask_app):
+        
+        logging.debug("Entering create_dash_app")
 
         dash_app = dash.Dash(server=flask_app, name="Dashboard", url_base_pathname="/dashboard/", external_stylesheets=external_stylesheets)
 
@@ -92,7 +82,7 @@ try:
         nifty = yf.Ticker(TICKER_SYMBOL)
         name = nifty.info['shortName']
 
-        
+
         dash_app.layout = html.Div(style={'fontFamily': 'Poppins, Lato, Roboto, sans-serif', 
         'backgroundColor': colors['background'], 'margin':'2%', 'marginBottom':'5rem'},
         children = [
@@ -109,7 +99,6 @@ try:
                 html.Div([ #SECTION 2
                         dcc.Loading(
                         children=[
-                            # 2. The target component that will be "replaced"
                             html.Div([  # LIVE DISPLAY OF PORTFOLIO
                             html.H3("Portfolio Value"),
                             html.Div(id='live-update-price_portfolio'),
@@ -129,8 +118,8 @@ try:
                             html.Div([
                             html.H3("Live Price of NIFTY 50"),
                             html.Div(id='live-update-price-nifty') #NIFTY 50 PRICE UPDATE
-                            ],style={**card_style, 'textAlign': 'center', 'color': 'black',})], type=spinner_type, 
-                            color = spinner_color),
+                            ],style={**card_style, 'textAlign': 'center', 'color': 'black',})],
+                            type=spinner_type, color = spinner_color),
                         
                         dcc.Loading(
                         children=[
@@ -140,9 +129,7 @@ try:
                                 ],style={**card_style, 'textAlign': 'center', 'color': 'black',})], type=spinner_type, 
                                 color = spinner_color)
                         
-                        
-
-
+    
                 ],style={'display': 'grid', 'gridTemplateColumns': 'repeat(4, 1fr)', 
                 'gap': '20px','marginBottom': '30px'}),
 
@@ -151,9 +138,12 @@ try:
                         html.H3("Performance of NAV and NIFTY 50")
                         ],style={'textAlign':'center'}),
 
+                    
                     html.Div([  #GRAPH
                         dcc.Dropdown(['NAV', 'NIFTY 50', 'NAV & NIFTY 50'], 'NAV & NIFTY 50', id='dropdown-selection'),
+                        dcc.Loading(
                         dcc.Graph(id='graph-content',style={'width':'100%', 'height':'500px'})
+                        , type=spinner_type , color = spinner_color)
                         ])
                         ],style={'margin':'2em'}),
                     
@@ -169,29 +159,38 @@ try:
                     html.Div([ #SECTOR GRAPH
                         dcc.Graph(id='sector_graph',
                         figure = px.histogram(combined_sector_df, x="Allocation", y="Sector", title="Investment Share by Sector", 
-                        barmode='group', text_auto='.2s', labels={"Allocation": "Share Percentage"}))
-                        ], style={'width':'50%', 'height':'40rem','display':'inline-block'})
+                        barmode='group', text_auto='.2s'))
+                        ], style={'width':'50%', 'height':'40rem','display':'inline-block'}, )
                         ], className="row", style={'textAlign':'center'}),
 
                 html.Div([  #SECTION 6
                         html.Div([
                             html.H3("Returns")
                         ], style={'textAlign':'center'}),
+
+                        dcc.Loading(
                         html.Div([
                         dcc.Dropdown(['Daily', 'Total'], 'Daily', id='dropdown-selection-sector-returns'), #DAILY/TOTAL PROFIT BY SECTOR
-                        dcc.Graph(id='graph-sector-returns')])
+                        dcc.Graph(id='graph-sector-returns')]), type='graph', color = spinner_color)
                     ]),
                     
                 html.Div([ #SECTION 7
                      #INVESTOR TABLE
                         html.H3("Investor Information"), 
-                        dash_table.DataTable(style_cell={'fontSize':'large',
-                        'height':'74px','verticalAlign': 'middle', 'textAlign':'center'}, id = "investor_table") #500px / 6 rows
-                    ], style={'textAlign':'center', 'margin':'3rem 2rem 3rem'}),
+
+                        dcc.Loading(
+                        html.Div([dash_table.DataTable(style_cell={'fontSize':'large',
+                        'height':'74px','verticalAlign': 'middle', 'textAlign':'center'}, id = "investor_table")])
+                        , type='circle', color = spinner_color)
+                        
+                    ], style={'textAlign':'center', 'margin':'3rem 2rem 3rem'}), #500px / 6 rows
 
                 html.Div([
                         html.H3("Risk and Allocation"),
-                        dash_table.DataTable(
+
+                        dcc.Loading(
+                        html.Div
+                        ([dash_table.DataTable(
                         style_cell={'fontSize':'large','height':'74px','verticalAlign': 'middle', 'textAlign':'center'},
                         style_data_conditional=[
                             {
@@ -202,7 +201,7 @@ try:
                                 'if': {'filter_query': '{To reduce/add} < ₹0', 'column_id':'To reduce/add'},
                                 'color': 'red'
                             }
-                        ], id = 'risk_table')
+                        ], id = 'risk_table')]), type='circle', color = spinner_color)
                     ], style={'textAlign':'center', 'margin': '3rem 2rem 2rem'}),
             
                 dcc.Interval( 
@@ -221,24 +220,15 @@ try:
             Input('interval-component', 'n_intervals'))
 
         def update_div_style(n):
-            new_portfolio = xw.books[wb_name]
-            todays_returns = 100 * new_portfolio.sheets['Portfolio']['A13'].value
-            if todays_returns < 0:
+            wb = portfolio.safe_load()
+            portfolio_return_perc = float(wb['Portfolio']['A4'].value/wb['Portfolio']['A7'].value - 1)
+
+            portfolio_return_perc = 100 * float(wb['Portfolio']['A4'].value/wb['Portfolio']['A7'].value - 1)
+            if portfolio_return_perc < 0:
                 return {'color': 'red'}, {'color': 'red'}
             else:
                 return {'color': 'green'}, {'color': 'green'}
 
-        """
-        @dash_app.callback(Output('live-update-price_portfolio', 'style'),
-            Input('interval-component', 'n_intervals'))
-
-        def update_div_style(n):
-            new_portfolio = xw.books[wb_name]
-            todays_returns = 100 * new_portfolio.sheets['Portfolio']['A13'].value
-            if todays_returns < 0:
-                return {'color': 'red'}
-            else:
-                return {'color': 'green'} """
 
         # Callback to update the current price
         @dash_app.callback(Output('live-update-price-nifty', 'children'),
@@ -258,38 +248,26 @@ try:
                     Input('interval-component', 'n_intervals'))
 
         def update_live_price(n):
-            current_price, todays_returns, nav = update_portfolio_dashboard(stock_names, quantity_list)
-            
+            current_price, todays_returns, nav = portfolio.update_portfolio_dashboard()
             current_price= f"{current_price:,.2f}"
             nav = f"{nav:.2f}"
             todays_returns = f"{todays_returns:.2%}" 
             
             return html.H3(f"₹ {current_price}"), html.H3(f"{todays_returns}"), html.H3(f"{nav}")
 
-        """
-        @dash_app.callback(Output('live-update-nav','children'),
-                    Input('interval-component', 'n_intervals'))
-
-        def display_nav(n):
-            new_portfolio = xw.books[wb_name]
-            nav = new_portfolio.sheets['Portfolio']['A25'].value
-            nav = f"{nav:.2f}"
-            return html.H3(f"{nav}")
-            """
 
         @dash_app.callback(Output('graph-content', 'figure'),
             Input('interval-component', 'n_intervals'),
             Input('dropdown-selection','value'))
 
         def nifty_and_nav(n, value):
-            new_portfolio = xw.books[wb_name]
             minimum = start_date
             stocks_download = yf.download({TICKER_SYMBOL}, start=start_date)
             stocks_download.reset_index(inplace=True)
             stocks_download = stocks_download[['Date', 'Close']]
 
-            last_row = new_portfolio.sheets['Log'].range('D1048576').end('up').row 
-            log_df = new_portfolio.sheets['Log'].range('C4:I'+str(last_row)).options(pd.DataFrame, header=1, index=False).value
+            log_df = portfolio.log_df
+            
             trace1 = go.Scatter(x=log_df['Date'],y=log_df['NAV'],mode='lines+markers',name='NAV', line_color ='#2596be')
             trace2 = go.Scatter(x=stocks_download['Date'],y=stocks_download['Close']['^NSEI'], 
                 mode='lines+markers',name='NIFTY 50', yaxis='y2', line_color='#be4d25') # yaxis='y2' for dual-axis
@@ -317,21 +295,13 @@ try:
             figure.update_layout(title="NAV and NIFTY 50's Performance", xaxis_title="Time")
             return figure
 
+
         @dash_app.callback(Output('graph-sector-returns','figure'),
                             Input('dropdown-selection-sector-returns', 'value'))
 
         def sector_returns(value):
-            last_row = new_portfolio.sheets['Portfolio'].range('C1048576').end('up').row
-            portfolio_df = new_portfolio.sheets['Portfolio'].range('C2:S' + str(last_row)).options(pd.DataFrame, header=1,
-                                                                                           index=False).value
-            sector_returns_df = portfolio_df[['Symbol', 'Sector', 'Today Profit and Loss (Percentage)', 'Total Profit and Loss (Percentage)']]
-            funds_sector_returns_df = funds_portfolio_df[['Symbol', 'Sector', 'Today Profit and Loss (Percentage)', 'Total Profit and Loss (Percentage)']]
-
-            funds_sector_returns_df.loc[:, 'Today Profit and Loss (Percentage)'] = funds_sector_returns_df['Today Profit and Loss (Percentage)'].astype(float).fillna(0) #FILLING NAN WITH 0 TO AVOID FUTURE CONCAT ERROR
-            combined_sector_returns_df = pd.concat([sector_returns_df, funds_sector_returns_df], ignore_index=True)
-
-            combined_sector_returns_df.loc[:,'Today Profit and Loss (Percentage)'] = 100 * combined_sector_returns_df.loc[:,'Today Profit and Loss (Percentage)']
-            combined_sector_returns_df.loc[:,'Total Profit and Loss (Percentage)'] = 100 * combined_sector_returns_df.loc[:,'Total Profit and Loss (Percentage)']
+            portfolio_df = portfolio.portfolio_df
+            combined_sector_returns_df = portfolio.combined_sector_returns_df
             
             if value == 'Daily':
                 figure = px.histogram(combined_sector_returns_df, x="Sector", y="Today Profit and Loss (Percentage)", 
@@ -351,17 +321,12 @@ try:
                             Input('interval-component', 'n_intervals'))
 
         def sector_allocation(value):
-            last_row = new_portfolio.sheets['Portfolio'].range('C1048576').end('up').row
-            portfolio_df = new_portfolio.sheets['Portfolio'].range('C2:S' + str(last_row)).options(pd.DataFrame, header=1,
-                                                                                           index=False).value
-            sector_df = portfolio_df[['Symbol', 'Sector', 'Allocation']]
-            sector_funds_portfolio_df = funds_portfolio_df[['Symbol', 'Sector', 'Allocation']]
-
-            combined_sector_df = pd.concat([sector_df, sector_funds_portfolio_df], ignore_index=True)
-            combined_sector_df.loc[:,'Allocation'] = combined_sector_df.loc[:,'Allocation'] * 100
-
-            figure = px.histogram(combined_sector_df, x="Allocation", y="Sector", title="Investment Share by Sector", 
-            barmode='group', text_auto='.2s', labels={"Allocation": "Share Percentage"})
+            combined_sector_df = portfolio.combined_sector_df
+            
+            figure = px.histogram(combined_sector_df, x="Allocation", y="Sector", 
+            title="Investment Share by Sector", 
+            barmode='group', text_auto='.2s')
+            figure.update_layout(xaxis_ticksuffix='%')
             return figure
 
 
@@ -369,21 +334,11 @@ try:
                             Input('interval-component', 'n_intervals'))
 
         def portf_allocation(value):
-            last_row = new_portfolio.sheets['Portfolio'].range('C1048576').end('up').row
-            portfolio_df = new_portfolio.sheets['Portfolio'].range('C2:S' + str(last_row)).options(pd.DataFrame, header=1,
-                                                                                           index=False).value
-            allocation_df = portfolio_df[['Symbol', 'Allocation']]
-            last_row = new_portfolio.sheets['Funds_Portfolio'].range('C1048576').end('up').row
-            funds_portfolio_df = new_portfolio.sheets['Funds_Portfolio'].range('C3:S' + str(last_row)).options(pd.DataFrame, header=1,
-                                                                                           index=False).value
-                                            
-            allocation_funds_portfolio_df = funds_portfolio_df[['Symbol', 'Allocation']]
-            
-            combined_allocation_df = pd.concat([allocation_df, allocation_funds_portfolio_df], ignore_index=True)
-            combined_allocation_df.loc[:,'Allocation'] = combined_allocation_df.loc[:,'Allocation'] * 100
+            combined_allocation_df = portfolio.combined_allocation_df
 
-            figure = px.bar(combined_allocation_df, x="Allocation", y="Symbol",
+            figure = px.bar(combined_allocation_df, x="Allocation", y="Symbol", text='Allocation',
             title="Portfolio Allocation", text_auto='.2s')
+            figure.update_traces(texttemplate='%{text:.1f}%')
             return figure
 
 
@@ -391,31 +346,26 @@ try:
                     Input('interval-component', 'n_intervals'))
 
         def update_time(n):
-            date_and_time = datetime.datetime.now()
+            date_and_time = datetime.datetime.now(ZoneInfo(timezone))
             date_and_time = date_and_time.strftime('%d/%m/%Y %I:%M:%S %p')
             return html.H4(f"Last updated on: {date_and_time}", style={'fontWeight': 'normal'})
 
-        """
-        @dash_app.callback(Output('returns', 'children'),
-                    Input('interval-component', 'n_intervals' ))
-
-        def returns_display(n):
-            new_portfolio = xw.books[wb_name]
-            todays_returns = new_portfolio.sheets['Portfolio']['A13'].value
-            todays_returns = f"{todays_returns:.2%}"
-            return html.H3(f"{todays_returns}") """
         
 
         @dash_app.callback(Output('investor_table', 'data'),
                 Input('interval-component', 'n_intervals'))
         def update_investor_table(n):
-            new_portfolio = xw.books[wb_name]
-            investor_df_og = new_portfolio.sheets['Ledger'].range('I4:P9').options(pd.DataFrame, header=1, index=False).value
+
+            investor_df_og = portfolio.investor_df_og
+            
             investor_df = investor_df_og[['Investor', 'Amount Invested', 'Investment Value', '% Total Fund','Profit/Loss']].copy() 
+
             investor_df['Profit/Loss'] = investor_df['Profit/Loss'].map('{:.2%}'.format)
             investor_df['% Total Fund'] = investor_df['% Total Fund'].map('{:.2%}'.format)
             investor_df['Amount Invested'] = investor_df['Amount Invested'].map('₹{:,.2f}'.format)
-            investor_df['Investment Value'] = investor_df['Investment Value'].map('₹{:,.2f}'.format)
+
+            investor_df['Investment Value'] = pd.to_numeric(investor_df['Investment Value'], errors='coerce')
+            investor_df['Investment Value'] = investor_df['Investment Value'].fillna(0).map('₹{:,.2f}'.format)
 
                 
             return investor_df.to_dict('records')
@@ -424,18 +374,42 @@ try:
         @dash_app.callback(Output('risk_table', 'data'),
                     Input('interval-component', 'n_intervals'))
         def update_risk_table(n):
-            new_portfolio = xw.books[wb_name]
-            risk_table_df = new_portfolio.sheets['Ledger'].range('R6:W8').options(pd.DataFrame, header=1, index=False).value
-            risk_table_df['Allocation %'] = risk_table_df['Allocation %'].map('{:.2%}'.format)
-            risk_table_df['Current %'] = risk_table_df['Current %'].map('{:.2%}'.format)
-            risk_table_df['Allocation Value'] = risk_table_df['Allocation Value'].map('₹{:,.2f}'.format)
-            risk_table_df['Current Value'] = risk_table_df['Current Value'].map('₹{:,.2f}'.format)
-            risk_table_df['To reduce/add'] = risk_table_df['To reduce/add'].map('₹{:,.2f}'.format)
+
+            risk_table_df = portfolio.risk_table_df
+
+            risk_table_df_dash = risk_table_df.copy()
+
+            #logger.info(f"before {risk_table_df_dash['Current %']}")
+
+            risk_table_df_dash['Allocation %'] = pd.to_numeric(risk_table_df_dash['Allocation %'])
+            risk_table_df_dash['Allocation %'] = risk_table_df_dash['Allocation %'].fillna(0).astype(float)
+            risk_table_df_dash['Allocation %'] = risk_table_df_dash['Allocation %'].map('{:.2%}'.format)
+            
+            risk_table_df_dash['Current %'] = pd.to_numeric(risk_table_df_dash['Current %'])
+            risk_table_df_dash['Current %'] = risk_table_df_dash['Current %'].fillna(0).astype(float)
+
+            risk_table_df_dash['Allocation Value'] = pd.to_numeric(risk_table_df_dash['Allocation Value'])
+            risk_table_df_dash['Allocation Value'] = risk_table_df_dash['Allocation Value'].fillna(0).astype(float)
+            
+            risk_table_df_dash['Current %'] = risk_table_df_dash['Current %'].map('{:.2%}'.format)
+            risk_table_df_dash['Allocation Value'] = risk_table_df_dash['Allocation Value'].map('₹{:,.2f}'.format)
+
+            risk_table_df_dash['Current Value'] = pd.to_numeric(risk_table_df_dash['Current Value'])
+            risk_table_df_dash['Current Value'] = risk_table_df_dash['Current Value'].fillna(0).astype(float)
+            risk_table_df_dash['Current Value'] = risk_table_df_dash['Current Value'].map('₹{:,.2f}'.format)
+
+            risk_table_df_dash['To reduce/add'] = pd.to_numeric(risk_table_df_dash['To reduce/add'])
+            risk_table_df_dash['To reduce/add'] = risk_table_df_dash['To reduce/add'].fillna(0).astype(float)
+            risk_table_df_dash['To reduce/add'] = risk_table_df_dash['To reduce/add'].map('₹{:,.2f}'.format)
+            
+            #logger.info(f"after {risk_table_df_dash}")
                 
-            return risk_table_df.to_dict('records')
+            return risk_table_df_dash.to_dict('records')
 
 
         return dash_app
     
-except:
-    "\n Error loading the dash application. Please re-run the Flask app.\n"
+except Exception as e:
+    print(f"Error with Dash App")
+    logger.debug("Error", exc_info=True)
+    

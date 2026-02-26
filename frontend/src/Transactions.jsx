@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { service } from "../Service";
 
 export default function Transactions() {
   const [clicked, setClicked] = useState(false);
@@ -41,13 +42,7 @@ export default function Transactions() {
     if (clicked) {
       e.preventDefault();
       try {
-        const response = await fetch("http://localhost:5000/transaction", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        });
-
-        const data = await response.json();
+        const data = await service.transactions(formData);
         alert(data.message);
       } catch (error) {
         console.error("Error: ", error);
